@@ -1,4 +1,4 @@
-# fresh-checks.tsv (harbor#1434) — the generated files this repo carries, each with the check that proves it current.
+# fresh-checks.tsv — the generated files this repo carries, each with the check that proves it current.
 #
 # file <TAB> check (sh, run from the repo root; exit 0 fresh, 1 stale, anything else unchecked) <TAB> fix <TAB> needs
 # `needs` is the path that must exist for the row to apply (default: the file itself). A generated file carries one

@@ -15,5 +15,5 @@ STANDARD="${NAMING_STANDARD_REPO:-}"
 }
 rc=0
 sh "$STANDARD/bin/doc-shape.sh" --root "$ROOT" --registry "$STANDARD/standards/naming" "$@" || rc=1
-HARBOR_SCOPE_ROOT="$ROOT" sh "$STANDARD/bin/doc-fresh-verify.sh" --table "$ROOT/contracts/fresh-checks.tsv" || rc=1
+sh "$STANDARD/bin/doc-fresh-verify.sh" --root "$ROOT" || rc=1
 exit "$rc"
