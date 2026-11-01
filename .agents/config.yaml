@@ -1,4 +1,5 @@
 context: repo
+repo-kind: fleet-controller  # standards/naming/repo-kinds.tsv; its system name, fleet, qualifies a decision id outside this repo
 # project-init: record of choices made at init time.
 # Safe to hand-edit; re-running `project-init` will reconcile with this file.
 
