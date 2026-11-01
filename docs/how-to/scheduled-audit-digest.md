@@ -1,3 +1,9 @@
+---
+kind: how-to
+owner: @VytCepas
+status: unreviewed
+---
+
 # Run the audit digest on a schedule
 
 `audit` prints the whole governance table every time. On a cadence you want the

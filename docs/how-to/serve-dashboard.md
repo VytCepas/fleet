@@ -1,3 +1,9 @@
+---
+kind: how-to
+owner: @VytCepas
+status: unreviewed
+---
+
 # Run the dashboard as a service
 
 `serve` renders the live fleet dashboard — the overview table, per-project

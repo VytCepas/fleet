@@ -1,3 +1,9 @@
+---
+kind: reference
+owner: @VytCepas
+status: unreviewed
+---
+
 # Descriptor contract v1
 
 The orchestrator is a **reader** of the contract that

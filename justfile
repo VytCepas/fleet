@@ -171,3 +171,9 @@ contract-freshness:
 [positional-arguments]
 install *args:
     uv run --no-python-downloads --no-project --python '>=3.11' python .agents/scripts/install_tool.py "$@"
+
+# docs front matter and generated-file headers, judged by the standard's doc-shape.sh and doc-fresh-verify.sh
+# (NAMING_STANDARD_REPO=<checkout of the naming standard>; without one it says UNCHECKED and exits 3).
+[doc("docs front matter + generated headers (gates/doc-check.sh)")]
+docs-check:
+    sh gates/doc-check.sh --strict

@@ -1,3 +1,9 @@
+---
+kind: how-to
+owner: @VytCepas
+status: unreviewed
+---
+
 # Heal the fleet on a schedule
 
 `heal` fixes a failing lint/test gate the way the engine detects one: it runs the

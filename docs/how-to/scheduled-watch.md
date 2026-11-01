@@ -1,3 +1,9 @@
+---
+kind: how-to
+owner: @VytCepas
+status: unreviewed
+---
+
 # Watch the fleet on a schedule
 
 `watch` is one pass of everything a scheduled observer needs: it runs the

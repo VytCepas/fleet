@@ -1,3 +1,9 @@
+---
+kind: reference
+owner: @VytCepas
+status: unreviewed
+---
+
 # projects-orchestrator
 
 Cross-project orchestration layer for agentic development

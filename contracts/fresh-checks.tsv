@@ -1,0 +1,9 @@
+# fresh-checks.tsv (harbor#1434) — the generated files this repo carries, each with the check that proves it current.
+#
+# file <TAB> check (sh, run from the repo root; exit 0 fresh, 1 stale, anything else unchecked) <TAB> fix <TAB> needs
+# `needs` is the path that must exist for the row to apply (default: the file itself). A generated file carries one
+# comment line `generated-by: <command>` in its first 20 lines, and <command> is the `fix` column here: the standard's
+# doc-shape.sh holds the header and this table equal both ways. Run with
+# `NAMING_STANDARD_REPO=<checkout> sh gates/doc-check.sh`. The vendored upstream contract has its own check:
+# `.agents/scripts/check_contract_freshness.py` (src/projects_orchestrator/freshness.py).
+.github/CODEOWNERS	uv run python .agents/scripts/gen_codeowners.py --check	uv run python .agents/scripts/gen_codeowners.py --write	

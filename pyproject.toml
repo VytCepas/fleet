@@ -108,6 +108,7 @@ also_copy = [
     "CHANGELOG.md",
     "README.md",
     "conftest.py",
+    "contracts",
     "contrib",
     "docs",
     "fixtures",

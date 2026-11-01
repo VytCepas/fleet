@@ -1,3 +1,9 @@
+---
+kind: reference
+owner: @VytCepas
+status: unreviewed
+---
+
 # Descriptor contract v2
 
 Status: **live** — project-init emits `project.project_init_contract_version: 2`
