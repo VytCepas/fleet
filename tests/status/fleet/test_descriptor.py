@@ -458,6 +458,59 @@ class TestBoundaryMarkerValue:
         descriptor = load_descriptor(project)
         assert descriptor is not None and descriptor.context == "ambient"
 
+    def test_scope_project_is_repo(self, tmp_path: Path) -> None:
+        """M39: the standard's spelling of a governed repo."""
+        project = make_project(
+            tmp_path, "alpha", config_text="scope: project\nproject:\n  name: alpha\n"
+        )
+        descriptor = load_descriptor(project)
+        assert descriptor is not None
+        assert (descriptor.context, descriptor.marker_key) == ("repo", "scope")
+
+    def test_scope_user_is_ambient(self, tmp_path: Path) -> None:
+        """M38: the standard's spelling of the opt-out."""
+        project = make_project(
+            tmp_path, "alpha", config_text="scope: user\nproject:\n  name: alpha\n"
+        )
+        descriptor = load_descriptor(project)
+        assert descriptor is not None
+        assert (descriptor.context, descriptor.marker_key) == ("ambient", "scope")
+
+    def test_either_key_opting_out_decides_ambient(self, tmp_path: Path) -> None:
+        """M40: `context: repo` beside `scope: user` is an opt-out, in either order."""
+        for text in ("context: repo\nscope: user\n", "scope: user\ncontext: repo\n"):
+            project = make_project(
+                tmp_path / text[:5], "alpha", config_text=text + "project:\n  name: alpha\n"
+            )
+            descriptor = load_descriptor(project)
+            assert descriptor is not None
+            assert (descriptor.context, descriptor.marker_key) == ("ambient", "both")
+
+    def test_legacy_context_is_reported_as_the_old_key(self, tmp_path: Path) -> None:
+        project = make_project(
+            tmp_path, "alpha", config_text="context: repo\nproject:\n  name: alpha\n"
+        )
+        descriptor = load_descriptor(project)
+        assert descriptor is not None and descriptor.marker_key == "context"
+
+    def test_an_unknown_scope_value_is_ignored_with_a_warning(self, tmp_path: Path) -> None:
+        project = make_project(
+            tmp_path, "alpha", config_text="scope: repo\nproject:\n  name: alpha\n"
+        )
+        descriptor = load_descriptor(project)
+        assert descriptor is not None and descriptor.context == ""
+        assert any("scope 'repo'" in w for w in descriptor.warnings)
+
+    def test_a_nested_scope_key_is_a_different_key(self, tmp_path: Path) -> None:
+        """M44."""
+        project = make_project(
+            tmp_path,
+            "alpha",
+            config_text="project:\n  name: alpha\ntooling:\n  scope: user\n",
+        )
+        descriptor = load_descriptor(project)
+        assert descriptor is not None and (descriptor.context, descriptor.marker_key) == ("", "")
+
     def test_an_opted_out_project_is_still_managed(self, tmp_path: Path) -> None:
         """`ambient` says which agent layer governs INSIDE the repo. It is not
         a request to be forgotten by the fleet, and reading it as one would
