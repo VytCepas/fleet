@@ -1,5 +1,5 @@
 ---
-id: projects-orchestrator-is-a-public-repo
+order: 10
 event: SessionStart
 when: always
 once: never

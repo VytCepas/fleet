@@ -121,7 +121,7 @@ def _split_frontmatter(text: str) -> tuple[dict[str, str], str]:
     A nested ``metadata:`` mapping's scalar entries are therefore folded into
     the top level as a FALLBACK. An explicit top-level key always wins: the flat
     form is the one that already worked, and a file carrying both most likely
-    means the outer one. ``CONTRACTS/memory-format.md`` does not specify the
+    means the outer one. ``contracts/memory-format.md`` does not specify the
     field's location at all, so both spellings are honoured rather than one
     being declared wrong.
     """

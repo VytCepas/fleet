@@ -21,7 +21,7 @@ from tests.conftest import git_init, make_project
 
 #: The registry id, spelled out: importing the module's own constant would let a
 #: changed stamp change the expectation with it.
-STAMP = "[check:fleet-test]"
+STAMP = "[check:test.fleet]"
 
 pytestmark = pytest.mark.skipif(
     shutil.which("just") is None and not os.environ.get("CI"),
@@ -75,7 +75,7 @@ def test_an_all_green_fleet_exits_0(fleet_dir: Path, capsys: pytest.CaptureFixtu
     assert rc == 0, out
     assert (
         out.strip().splitlines()[-1]
-        == f"{STAMP} fleet-test: 2 repos, 2 pass, 0 fail, 0 skip; 8 passed, 0 failed"
+        == f"{STAMP} test.fleet: 2 repos, 2 pass, 0 fail, 0 skip; 8 passed, 0 failed"
     )
 
 
@@ -246,7 +246,7 @@ def test_json_carries_the_rows_and_the_exit(
     rc, out = _run(fleet_dir, "--json", capsys=capsys)
     assert rc == 1
     doc = json.loads(out)
-    assert doc["check"] == "fleet-test"
+    assert doc["check"] == "test.fleet"
     by_repo = {row["repo"]: row for row in doc["rows"]}
     assert by_repo["beta"]["failed"] == 2
     assert by_repo["beta"]["exit"] == 1
