@@ -121,6 +121,14 @@ license:
 fuzz:
     uv run --with hypothesis --with pytest-xdist pytest -n auto --tb=short -q
 
+# the naming standard over this repo, as a ratchet: new findings fail, a fixed
+# finding must be deleted from gates/naming.baseline. Judges with the checkout named
+# by NAMING_STANDARD_REPO (gates/naming-check.sh); UNCHECKED exits 3, never a pass.
+# The verb `naming` is required of this repo's kind by harbor's verbs.tsv (harbor#1428).
+[doc("naming standard ratchet (gates/naming-check.sh)")]
+naming:
+    sh -c 'if [ -f gates/naming-check.sh ]; then sh gates/naming-check.sh; else echo "naming gate not installed here (project-init upgrade --apply --accept-new naming-gate)"; fi'
+
 # what CI runs (the full gate)
 ci: setup lint typecheck test-cov audit
 

@@ -5,7 +5,8 @@ report and one exit code. It adds no new probe beyond a memory-schema lint:
 it composes :func:`doctor.diagnose` (contract conformance), scaffold-drift
 *divergence* (``doctor`` only checks that a manifest exists), and check
 freshness — plus a memory pass that ports ``lint_memory.sh``'s intent into the
-never-raise engine.
+never-raise engine, and a verbs pass that asks the naming lint whether the
+justfile carries the task verbs the project's repo-kind requires (harbor#1428).
 
 ``doctor`` stays the focused contract-conformance command; ``audit`` is the
 broad governance report that reuses it. Every finding is ``ok | warn | fail``;
@@ -16,7 +17,9 @@ anything is ``warn`` or worse.
 from __future__ import annotations
 
 import logging
+import os
 import re
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -29,6 +32,8 @@ from projects_orchestrator.memory import load_project_memory
 _log = logging.getLogger(__name__)
 
 _COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
+_REPO_KIND_RE = re.compile(r"^repo-kind:[ \t]*[\"']?([a-z][a-z0-9-]*)", re.MULTILINE)
+_VERB_TIMEOUT_S = 60
 
 
 @dataclass(frozen=True)
@@ -38,7 +43,7 @@ class AuditFinding:
     Attributes:
         project: Project name.
         category: Probe name (``config``/``contract``/…/``drift``/``memory``/
-            ``freshness``).
+            ``freshness``/``verbs``).
         severity: ``ok`` | ``warn`` | ``fail``.
         message: Short human-readable detail.
     """
@@ -144,6 +149,84 @@ def _memory_findings(descriptor: ProjectDescriptor) -> list[AuditFinding]:
     return findings
 
 
+def _repo_kind(root: Path) -> str | None:
+    """The ``repo-kind:`` a project declares in ``.agents/config.yaml``, else ``None``."""
+    try:
+        text = (root / ".agents" / "config.yaml").read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return None
+    match = _REPO_KIND_RE.search(text)
+    return match.group(1) if match else None
+
+
+def _naming_judge(root: Path) -> tuple[Path, Path] | None:
+    """The naming lint and registry to judge ``root`` with, or ``None``.
+
+    The repo's own vendored package first (what a scaffolded repo runs offline),
+    else the checkout named by ``NAMING_STANDARD_REPO`` (what this repo's own
+    naming gate uses).
+    """
+    vendored = root / "vendor" / "naming"
+    if (vendored / "lint-name.sh").is_file() and (vendored / "registry").is_dir():
+        return vendored / "lint-name.sh", vendored / "registry"
+    standard = os.environ.get("NAMING_STANDARD_REPO")
+    if standard:
+        lint = Path(standard) / "bin" / "lint-name.sh"
+        registry = Path(standard) / "standards" / "naming"
+        if lint.is_file() and registry.is_dir():
+            return lint, registry
+    return None
+
+
+def _verbs_findings(descriptor: ProjectDescriptor) -> list[AuditFinding]:
+    """A verb the project's kind requires of its justfile and it lacks (harbor#1428).
+
+    Calls the naming lint's ``--check repo-kind`` and keeps its ``name.repo-verb``
+    records, so the verb register and the recipe reading stay the lint's. A
+    project that declares no ``repo-kind`` or has no lint to judge with is
+    ``ok`` with the reason: not judged is never a failure and never a pass.
+    """
+    name = descriptor.name
+    kind = _repo_kind(descriptor.path)
+    if kind is None:
+        return [AuditFinding(name, "verbs", OK, "no repo-kind declared: verbs not judged")]
+    judge = _naming_judge(descriptor.path)
+    if judge is None:
+        return [
+            AuditFinding(
+                name, "verbs", WARN, "unchecked: no vendor/naming/ and no NAMING_STANDARD_REPO"
+            )
+        ]
+    lint, registry = judge
+    argv = ["sh", str(lint), "--root", str(descriptor.path), "--registry", str(registry)]
+    argv += ["--check", "repo-kind", ".", "--format", "findings"]
+    try:
+        done = subprocess.run(  # noqa: S603 - argv list, no shell, paths from the registry
+            argv, capture_output=True, text=True, timeout=_VERB_TIMEOUT_S, check=False
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        return [
+            AuditFinding(name, "verbs", WARN, f"unchecked: the naming lint did not run ({exc!r})")
+        ]
+    if done.returncode > 1:
+        return [
+            AuditFinding(
+                name, "verbs", WARN, f"unchecked: the naming lint exited {done.returncode}"
+            )
+        ]
+    missing = sorted(
+        fields[2].removeprefix("repo-verb:")
+        for fields in (line.split("\t") for line in done.stdout.splitlines())
+        if len(fields) >= 3 and fields[0] in ("A", "V") and fields[1] == "name.repo-verb"
+    )
+    if not missing:
+        return [AuditFinding(name, "verbs", OK, f"carries the verbs a {kind} repo requires")]
+    return [
+        AuditFinding(name, "verbs", WARN, f"missing verb: {verb} (a {kind} repo requires it)")
+        for verb in missing
+    ]
+
+
 def _freshness_finding(name: str, cached: dict[str, CheckResult] | None) -> AuditFinding:
     """Report whether the project has any cached check results."""
     if cached:
@@ -168,6 +251,7 @@ def audit_project(
     if drift is not None:
         findings.append(drift)
     findings.extend(_memory_findings(descriptor))
+    findings.extend(_verbs_findings(descriptor))
     findings.append(_freshness_finding(descriptor.name, cached))
     return AuditReport(project=descriptor.name, findings=tuple(findings))
 
