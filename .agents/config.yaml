@@ -18,7 +18,7 @@ project:
   monitor_ignore_checks: []  # single-line JSON array of check names monitor_pr.sh treats as informational — reported, never blocking (#837), e.g. ["board-sync"] when a GitHub-hosted job is billing-locked while real CI runs self-hosted. Override per-run with PI_MONITOR_IGNORE_CHECKS (comma-separated).
 
 language: python            # python | node | go | none
-repo-kind: fleet-controller  # standards/naming/repo-kinds.tsv: the kind of repo this is, which fixes the task verbs its justfile must carry (harbor#1428)
+repo-kind: fleet-controller  # standards/naming/repo-kinds.tsv: the kind of repo this is, which fixes the task verbs its justfile must carry
 
 delivery: library            # library | service | prototype — how this ships (ADR-015)
 deploy: none            # none | cloud-run | fly | k8s | registry | custom — service deploy overlay (ADR-015)

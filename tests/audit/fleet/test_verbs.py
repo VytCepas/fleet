@@ -1,4 +1,4 @@
-"""The ``verbs`` audit probe: a justfile missing a verb its repo-kind requires is red (harbor#1428)."""
+"""The ``verbs`` audit probe: a justfile missing a verb its repo-kind requires is red."""
 
 from __future__ import annotations
 
@@ -23,8 +23,8 @@ _KINDS = "id\trequired\toptional\tnote\nworkload\tjustfile\t-\tx\n"
 def _judge(root: Path) -> Path:
     """A stub naming package at ``root``/vendor/naming that reads the real lint's contract.
 
-    The real lint is harbor's; here a tiny sh script reads the same register and
-    prints the records the audit parses, so the test needs no harbor checkout.
+    The real lint belongs to the naming standard; here a tiny sh script reads the same register and
+    prints the records the audit parses, so the test needs no checkout of the standard.
     """
     vendored = root / "vendor" / "naming"
     (vendored / "registry").mkdir(parents=True)

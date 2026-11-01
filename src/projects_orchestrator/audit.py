@@ -6,7 +6,7 @@ it composes :func:`doctor.diagnose` (contract conformance), scaffold-drift
 *divergence* (``doctor`` only checks that a manifest exists), and check
 freshness — plus a memory pass that ports ``lint_memory.sh``'s intent into the
 never-raise engine, and a verbs pass that asks the naming lint whether the
-justfile carries the task verbs the project's repo-kind requires (harbor#1428).
+justfile carries the task verbs the project's repo-kind requires.
 
 ``doctor`` stays the focused contract-conformance command; ``audit`` is the
 broad governance report that reuses it. Every finding is ``ok | warn | fail``;
@@ -153,7 +153,8 @@ def _repo_kind(root: Path) -> str | None:
     """The ``repo-kind:`` a project declares in ``.agents/config.yaml``, else ``None``."""
     try:
         text = (root / ".agents" / "config.yaml").read_text(encoding="utf-8", errors="replace")
-    except OSError:
+    except OSError as exc:
+        _log.debug("cannot read %s: %r", root / ".agents" / "config.yaml", exc)
         return None
     match = _REPO_KIND_RE.search(text)
     return match.group(1) if match else None
@@ -179,7 +180,7 @@ def _naming_judge(root: Path) -> tuple[Path, Path] | None:
 
 
 def _verbs_findings(descriptor: ProjectDescriptor) -> list[AuditFinding]:
-    """A verb the project's kind requires of its justfile and it lacks (harbor#1428).
+    """A verb the project's kind requires of its justfile and it lacks.
 
     Calls the naming lint's ``--check repo-kind`` and keeps its ``name.repo-verb``
     records, so the verb register and the recipe reading stay the lint's. A
