@@ -553,6 +553,15 @@ def _cmd_doctor(args: argparse.Namespace) -> int:
         print(f"{report.project}: {report.status}")
         for finding in report.findings:
             print(f"  [{finding.status}] {finding.check}: {finding.detail}")
+    # The marker window closes when this reads zero: the `context:` key and the legacy marker file are
+    # removed only after the fleet reports no repo still on them (marker contract).
+    legacy = [d.name for d in selected if d.marker_key == "context"]
+    if legacy:
+        print(
+            f"marker: {len(legacy)} of {len(selected)} repo(s) still on the legacy `context:` key: {', '.join(legacy)}"
+        )
+    else:
+        print(f"marker: 0 of {len(selected)} repo(s) on the legacy `context:` key")
     return _unresolved_rc(fleet, rc)
 
 

@@ -323,6 +323,9 @@ class ProjectDescriptor:
     ci: CiConfig | None = None
     heal_mode: str = ""
     context: str = ""
+    #: Which marker key the config declares (``scope`` | ``context`` | ``both`` | ``""``), so the fleet can report
+    #: the repos still on the legacy ``context:`` spelling.
+    marker_key: str = ""
     warnings: tuple[str, ...] = ()
     #: Names of fields that were DECLARED but could not be read, so a consumer
     #: can tell "absent" from "present and broken" — which the coerced value
@@ -485,6 +488,8 @@ HEAL_MODES = ("fix", "notify")
 # Detect-and-defer boundary values, frozen in the marker contract and mirrored
 # by project-init's descriptor schema enum (marker contract case H1).
 CONTEXT_VALUES = ("repo", "ambient")
+#: The standard's spelling of the same declaration (D-12): ``scope: project`` is ``repo``, ``scope: user`` is ``ambient``.
+SCOPE_VALUES = {"project": "repo", "user": "ambient"}
 
 
 def _plugin_version(raw: dict[str, Any], project: dict[str, Any]) -> str:
@@ -522,25 +527,15 @@ def _extract_heal_mode(raw: dict[str, Any], warnings: list[str]) -> str:
     return mode
 
 
-def _extract_context(raw: dict[str, Any], warnings: list[str]) -> str:
-    """Parse the top-level ``context`` boundary marker; ``""`` when absent.
-
-    The value is TOP-LEVEL by contract, which YAML gives for free here: a
-    ``context:`` indented under some other block parses as that block's key and
-    is never seen, and a commented-out one is not a key at all. Both are rules
-    the shell and regex readers of this same field have to spell out.
-
-    An unknown value is ignored WITH a warning rather than guessed. For a key
-    three implementations in two languages read, the realistic failure is a
-    near-miss (``Repo``, ``project``) that looks marked to a human and resolves
-    to nothing in code — project-init's descriptor schema constrains it to an
-    enum for the same reason.
-    """
-    if "context" not in raw:
+def _read_marker_key(
+    raw: dict[str, Any], key: str, allowed: tuple[str, ...], warnings: list[str]
+) -> str:
+    """One marker key's value, or ``""`` when absent, empty or not one of *allowed*."""
+    if key not in raw:
         return ""
-    value = raw.get("context")
+    value = raw.get(key)
     if value is None:
-        # `context:` with nothing after it. YAML gives None, and that is the one
+        # `key:` with nothing after it. YAML gives None, and that is the one
         # shape genuinely indistinguishable from an absent key — the writer got
         # as far as the key and no further.
         return ""
@@ -551,13 +546,51 @@ def _extract_context(raw: dict[str, Any], warnings: list[str]) -> str:
     # to marker presence). A reader that cannot tell them apart hands the operator
     # a repo that looks unmarked and is actually mis-marked.
     if not isinstance(value, str) or not value.strip():
-        warnings.append(f"context must be one of {'|'.join(CONTEXT_VALUES)} — ignored: {value!r}")
+        warnings.append(f"{key} must be one of {'|'.join(allowed)} — ignored: {value!r}")
         return ""
-    context = value.strip()
-    if context not in CONTEXT_VALUES:
-        warnings.append(f"context '{context}' is not one of {'|'.join(CONTEXT_VALUES)} — ignored")
+    text = value.strip()
+    if text not in allowed:
+        warnings.append(f"{key} '{text}' is not one of {'|'.join(allowed)} — ignored")
         return ""
-    return context
+    return text
+
+
+def _extract_context(raw: dict[str, Any], warnings: list[str]) -> str:
+    """Parse the top-level boundary marker, either spelling; ``""`` when absent.
+
+    The standard's key is ``scope: project|user`` (D-12); ``context: repo|ambient``
+    is the legacy spelling and is still read (#966, #963). They map
+    ``project`` = ``repo`` and ``user`` = ``ambient``, and EITHER key opting out
+    decides ``ambient``: a config carrying ``context: repo`` beside ``scope: user``
+    is ``ambient``, because for the guards that read this field the opt-out is the
+    safe direction (marker contract case M40).
+
+    The value is TOP-LEVEL by contract, which YAML gives for free here: a
+    key indented under some other block parses as that block's key and
+    is never seen, and a commented-out one is not a key at all. Both are rules
+    the shell and regex readers of this same field have to spell out.
+
+    An unknown value is ignored WITH a warning rather than guessed. For a key
+    three implementations in two languages read, the realistic failure is a
+    near-miss (``Repo``, ``project`` under ``context``) that looks marked to a
+    human and resolves to nothing in code — project-init's descriptor schema
+    constrains it to an enum for the same reason.
+    """
+    legacy = _read_marker_key(raw, "context", CONTEXT_VALUES, warnings)
+    scope = _read_marker_key(raw, "scope", tuple(SCOPE_VALUES), warnings)
+    verdicts = [v for v in (legacy, SCOPE_VALUES.get(scope, "")) if v]
+    if "ambient" in verdicts:
+        return "ambient"
+    return verdicts[0] if verdicts else ""
+
+
+def marker_keys(raw: dict[str, Any]) -> str:
+    """Which marker keys a config declares: ``scope``, ``context``, ``both`` or ``""``."""
+    has_scope = raw.get("scope") is not None
+    has_context = raw.get("context") is not None
+    if has_scope and has_context:
+        return "both"
+    return "scope" if has_scope else ("context" if has_context else "")
 
 
 ESCAPES = "escapes the project root"
@@ -815,6 +848,7 @@ def parse_config(text: str, project_dir: Path, config_root: str = ".claude") -> 
         ci=_extract_ci(raw),
         heal_mode=_extract_heal_mode(raw, warnings),
         context=_extract_context(raw, warnings),
+        marker_key=marker_keys(raw),
         warnings=tuple(_printable(w) for w in warnings),
         malformed=tuple(malformed),
     )

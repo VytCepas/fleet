@@ -88,6 +88,21 @@ def _check_config(descriptor: ProjectDescriptor) -> Finding:
     return Finding("config", OK, "config.yaml parsed")
 
 
+def _check_marker(descriptor: ProjectDescriptor) -> Finding:
+    """The detect-and-defer marker uses the standard's ``scope:`` key.
+
+    The legacy ``context:`` spelling still resolves, so this is a warning to migrate, never a failure;
+    an undeclared marker is not one either (every config scaffolded before PI-901 lacks it).
+    """
+    if descriptor.marker_key == "context":
+        return Finding(
+            "marker", WARN, "legacy `context:` key; yard writes `scope: project|user` now"
+        )
+    if descriptor.marker_key in ("scope", "both"):
+        return Finding("marker", OK, "scope: declared")
+    return Finding("marker", OK, "no marker key declared")
+
+
 def _check_contract(descriptor: ProjectDescriptor) -> Finding:
     """A contract version is declared and understood."""
     version = descriptor.contract_version
@@ -233,6 +248,7 @@ _CHECKS = (
     _check_manifest,
     _check_hooks,
     _check_tooling,
+    _check_marker,
     _check_upgrade,
     _check_cloud,
     _check_deploy_workflow,
