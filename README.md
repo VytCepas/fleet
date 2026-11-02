@@ -192,7 +192,7 @@ without a row here fails CI.
 | Command | What it does |
 |---|---|
 | `checks` | Run each project's declared gates |
-| `test-fleet` | Run every repo's `just test` and report one row per repo — passed, failed, exit — read from the test contract's `<suite>: N passed, M failed` line; exit 1 when any repo fails; a repo with no justfile or no `test` recipe is red, never skipped. Registered as the check `fleet-test`: every line carries `[check:fleet-test]` |
+| `test-fleet` | Run every repo's `just test` and report one row per repo — passed, failed, exit — read from the test contract's `<suite>: N passed, M failed` line; exit 1 when any repo fails; a repo with no justfile or no `test` recipe is red, never skipped. Registered as the check `test.fleet`: every line carries `[check:test.fleet]` |
 | `ci` | Probe CI conclusions and open-PR counts |
 | `cloud-status` | Probe deployed services |
 | `deploy` | Dispatch a project's deploy workflow (`--apply` to mean it) |
