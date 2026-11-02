@@ -12,6 +12,12 @@ version's only source. `tests/test_version.py` fails when they disagree.
 
 ### Changed
 
+- **`watch` emits alerts and never pushes them: `--webhook` and `PO_WATCH_WEBHOOK` are
+  removed.** Nothing scheduled `watch`, and a pass that could post to a webhook was a
+  second notifier beside the scheduler's own. The pass keeps the text and `--json`
+  report and its exit code (1 eventful, 0 quiet, 2 no fleet); the scheduler that runs it
+  turns those into its notice. `notify --webhook` is unchanged.
+
 - **`just install` fetches `origin/main` in its dry run, and a refusal prints as
   `  FAIL: <reason>` then `  fix: <command>`**. The dry run judged "in sync" by
   the last-fetched ref and passed a clone five merges behind, which `--apply` then

@@ -4,20 +4,24 @@
 declared gates fleet-wide, probes each project's CI (via the forge its host
 names) and cloud state, merges everything into the checks cache, appends it
 to history (the trend column), then computes threshold alerts from the
-refreshed view and — when a webhook is configured — pushes them. It chains
-what `checks`, `ci`, `cloud-status` and `notify` do separately, so a timer
-needs a single invocation.
+refreshed view and reports them. It chains what `checks`, `ci`, `cloud-status`
+and `notify` do separately, so a timer needs a single invocation.
+
+`watch` **emits and never pushes**: it has no `--webhook`. Its output is the text
+or `--json` report and the exit code (below); whatever schedules it owns the
+alert path, so a box keeps one notifier, not one per tool. A box with its own
+alerting runs `watch --json --interval <seconds>` from its scheduler and turns
+`alerts` and the exit code into its own notice.
 
 > **Platforms.** The timer that ships is a **systemd user unit**, so the install
 > below schedules on Linux, and on WSL with systemd enabled. **No launchd plist
-> ships and this guide has no cron form, so on macOS nothing schedules `watch`.**
-> There a pass runs only when you run it, fleet health is pull-only, and the
-> heartbeat reads `never` or the time of your last manual pass. Alerts are
-> delivered only by a pass you run yourself, `watch --webhook` as in the command
-> above or `notify --webhook` (#251).
+> ships and this guide has no cron form**: on macOS the pass runs when whatever
+> schedules your box runs it (a launchd job of your own), or when you run it. Without
+> either, fleet health is pull-only and the heartbeat reads `never` or the time of
+> your last manual pass. `notify --webhook` (#251) is the one command that pushes alerts.
 
 ```bash
-projects-orchestrator watch --interval 3600 --root ~/projects --webhook "$SLACK_WEBHOOK"
+projects-orchestrator watch --interval 3600 --root ~/projects
 ```
 
 `--interval` is the schedule this pass runs on, and it is what lets `status`
@@ -49,8 +53,7 @@ Configuration is optional, via a private env file:
 
 ```bash
 mkdir -p ~/.config/projects-orchestrator
-printf 'PO_FLEET_ROOT=%s\nPO_WATCH_WEBHOOK=%s\n' \
-  "$HOME/projects" "https://hooks.slack.com/services/…" \
+printf 'PO_FLEET_ROOT=%s\n' "$HOME/projects" \
   > ~/.config/projects-orchestrator/watch.env
 chmod 600 ~/.config/projects-orchestrator/watch.env
 ```

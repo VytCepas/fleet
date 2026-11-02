@@ -1476,14 +1476,16 @@ def _cmd_notify(args: argparse.Namespace) -> int:
 
 
 def _cmd_watch(args: argparse.Namespace) -> int:
-    """One scheduled watch pass: refresh gates, record history, push alerts.
+    """One scheduled watch pass: refresh gates, record history, report alerts.
 
     Chains what ``checks``, ``ci``, ``cloud-status`` and ``notify`` do
     separately, so a timer needs a single invocation: run the declared gates
     fleet-wide, probe each project's CI, cloud state, and supervised-process
     liveness, merge everything into the cache, append it to history, then
-    compute threshold alerts from the refreshed fleet view and (optionally)
-    POST them to a webhook.
+    compute threshold alerts from the refreshed fleet view. It emits them (text,
+    or ``--json``) and exits; it never pushes them anywhere: the box's one
+    notifier is the scheduler that runs it, which reads the exit code and the
+    JSON.
 
     The remote probes always run — ``--changed-only`` economizes on the local
     gates only, because a cached pass at an unchanged HEAD says nothing about
@@ -1541,14 +1543,12 @@ def _cmd_watch(args: argparse.Namespace) -> int:
     # indistinguishable from a pass that never happened.
     watchdog.record_pass(args.interval)
     alerts = fleet_alerts(fleet_snapshots(fleet))
-    delivered = post_webhook(args.webhook, alerts) if args.webhook and alerts else None
     if args.json:
         _emit_json(
             {
                 "checks": [{**asdict(r), "cached": reused} for r, reused in pairs]
                 + [{**asdict(r), "cached": False} for r in remote],
                 **alerts_payload(alerts),
-                "webhook": None if delivered is None else ("delivered" if delivered else "failed"),
             }
         )
         return 1 if alerts else 0
@@ -1560,8 +1560,6 @@ def _cmd_watch(args: argparse.Namespace) -> int:
         f"{len(remote)} remote probe(s), {len(alerts)} alert(s)"
     )
     print(render_alerts(alerts))
-    if delivered is not None:
-        print(f"webhook: {'delivered' if delivered else 'delivery failed'}", file=sys.stderr)
     return 1 if alerts else 0
 
 
@@ -2004,9 +2002,8 @@ def _add_test_fleet_arguments(
 
 
 def _add_watch_arguments(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
-    """Wire `watch`'s gate-selection and webhook flags onto its subparser."""
+    """Wire `watch`'s gate-selection flags onto its subparser (it has no webhook: it never pushes)."""
     watch_sp = sub.choices["watch"]
-    watch_sp.add_argument("--webhook", help="POST alerts as JSON to this URL (Slack-compatible)")
     watch_sp.add_argument(
         "--interval",
         type=int,
