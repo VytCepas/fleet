@@ -502,6 +502,20 @@ The environment an agent run is allowed to see — the data plane, scrubbed out.
 
 - `def agent_env` — Build the environment an agent subprocess may see (pure).
 
+### `projects_orchestrator/seams.py`
+
+Is every cross-repo copy still what its producer ships (box register, seams).
+
+- `class Seam` — One row of ``contracts/seams.tsv``.
+- `class Finding` — One thing wrong with a seam.
+- `def load_register` — Parse ``seams.tsv`` text into rows, skipping comments and the header (pure).
+- `def git_reader` — A :data:`Reader` that reads ``ref:path`` from the system's checkout with ``git show``.
+- `def default_ref` — ``origin/main`` when the checkout has it, else ``HEAD`` (the producer's published state).
+- `def scan_copies` — The vendored copies among a repo's tracked paths: manifests, ``vendor/<x>/`` and fixture schemas (pure).
+- `def unregistered` — Copies in ``system``'s tree that no row names as its ``copy_path`` (pure).
+- `def check` — Every finding over the register: stale copies, missing copies and copies with no row.
+- `def main` — Print one tab-separated finding per line. Exit 0 none, 1 findings, 3 nothing could be judged.
+
 ### `projects_orchestrator/selector.py`
 
 ``--where ci=fail`` — filter the fleet on what it already knows.
@@ -583,6 +597,21 @@ Scheme and host allowlist for descriptor- and operator-declared URLs.
 
 - `def is_probe_safe` — Whether ``url`` may be fetched by a fleet probe (pure; never raises).
 - `def guarded_opener` — An opener that validates every redirect hop, not just the first URL.
+
+### `projects_orchestrator/versions.py`
+
+Where does each repo's pinned version differ from the box register? (box register, versions).
+
+- `class Pin` — One row of the register.
+- `class Drift` — One pin of one repo that differs from the register.
+- `class Facts` — What a repo pins, read from its files.
+- `def load_register` — Parse ``versions.tsv`` text into rows, skipping comments and the header (pure).
+- `def inspect` — Read what a checkout pins.
+- `def drift` — Every difference between a repo's pins and the register, update-bot absence included (pure).
+- `def load_exceptions` — ``(repo, id, reason)`` rows of the exception file; ``*`` for a whole repo or every axis (pure).
+- `def classify` — Mark each drift ``excepted`` or ``exempt`` when an exception row covers it (pure).
+- `def report` — Drift for every repo, classified. A repo with a ``*`` exception is listed once as exempt.
+- `def main` — Print one line per drift and a count; exit 1 when any drift has no exception, else 0.
 
 ### `projects_orchestrator/watchdog.py`
 
