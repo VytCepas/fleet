@@ -211,6 +211,7 @@ Read a child project's machine-readable self-description.
 - `class CiConfig` — Contract ``ci:`` block — a non-forge CI status endpoint (project-init #828).
 - `class ProjectDescriptor` — Everything the orchestrator knows about a project without running it.
 - `def contract_label` — Render a descriptor's contract version for a human column (pure).
+- `def marker_keys` — Which marker keys a config declares: ``scope``, ``context``, ``both`` or ``""``.
 - `def parse_config` — Build a descriptor from raw config text (pure; never raises).
 - `def parse_scaffold_version` — Parse a ``MAJOR.MINOR.PATCH`` scaffold version into a comparable tuple.
 - `def load_descriptor` — Load the descriptor for one project directory.

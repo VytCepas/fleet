@@ -17,8 +17,8 @@ timeout) is a failure for every repo: no tests ran, and a skip would read green.
 A missing summary line leaves the counts unknown (``?``) and lets the exit code
 decide. The summary line is the last one printed on either stream.
 
-Registered as the check ``fleet-test``; every line it prints carries
-``[check:fleet-test]``, so an alert resolves to its registry row.
+Registered as the check ``test.fleet``; every line it prints carries
+``[check:test.fleet]``, so an alert resolves to its registry row.
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ from projects_orchestrator.descriptor import ProjectDescriptor
 from projects_orchestrator.pool import map_ordered
 from projects_orchestrator.runner import RunResult, run_command
 
-CHECK_ID = "fleet-test"
+CHECK_ID = "test.fleet"
 STAMP = f"[check:{CHECK_ID}]"
 #: One hour per repo: a full suite is minutes, and a hung one must still end.
 DEFAULT_TIMEOUT = 3600.0
