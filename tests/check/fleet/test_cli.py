@@ -632,7 +632,7 @@ def test_watch_records_history_read_back_by_history_command(fleet_dir: Path, cap
 
 def test_watch_has_no_webhook_flag(fleet_dir: Path) -> None:
     # The box has one notifier (the scheduler that runs watch, which reads its exit code and
-    # --json), so a scheduled watch can never be pointed at a webhook (harbor#1437).
+    # --json), so a scheduled watch can never be pointed at a webhook.
     with pytest.raises(SystemExit) as exc:
         main(["watch", "--root", str(fleet_dir), "--webhook", "https://hooks.example/x"])
     assert exc.value.code == 2
