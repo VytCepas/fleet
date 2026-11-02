@@ -274,3 +274,16 @@ def test_doctor_fails_a_tier_that_contradicts_its_stack(fleet_dir: Path) -> None
     config = next(f for f in _report(fleet_dir, "edited").findings if f.check == "config")
     assert config.status == "fail"
     assert "disagrees with memory.stack 'obsidian-graphify'" in config.detail
+
+
+def test_diagnose_marker_warns_on_the_legacy_context_key(fleet_dir: Path) -> None:
+    make_project(fleet_dir, "alpha", config_text="context: repo\nproject:\n  name: alpha\n")
+    finding = _finding(_report(fleet_dir), "marker")
+    assert finding.status == "warn" and "scope:" in finding.detail
+
+
+def test_diagnose_marker_ok_on_scope_and_when_undeclared(fleet_dir: Path) -> None:
+    make_project(fleet_dir, "alpha", config_text="scope: project\nproject:\n  name: alpha\n")
+    make_project(fleet_dir, "beta", config_text="project:\n  name: beta\n")
+    assert _finding(_report(fleet_dir, "alpha"), "marker").status == "ok"
+    assert _finding(_report(fleet_dir, "beta"), "marker").status == "ok"
