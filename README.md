@@ -200,7 +200,7 @@ without a row here fails CI.
 | `campaign` | The same change across many projects, canary-first |
 | `register` | Add a freshly-scaffolded project to the fleet |
 | `notify` | Compute threshold alerts, optionally push them |
-| `watch` | One scheduled pass: refresh, record, alert |
+| `watch` | One scheduled pass: refresh, record, report alerts (emits, never pushes) |
 
 **Agent runs and processes**
 

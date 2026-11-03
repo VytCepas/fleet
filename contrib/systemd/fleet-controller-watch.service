@@ -1,5 +1,5 @@
 [Unit]
-Description=projects-orchestrator watch pass — refresh gates, record history, push threshold alerts
+Description=projects-orchestrator watch pass — refresh gates, record history, report threshold alerts
 Documentation=https://github.com/VytCepas/projects-orchestrator/blob/main/docs/how-to/scheduled-watch.md
 After=network-online.target
 Wants=network-online.target
@@ -17,7 +17,6 @@ WorkingDirectory=%h
 # Optional config. Create the file with mode 600 and put in it:
 #   PORT_ROOT=/path/to/your/workspace        (if the repos do not live in ~/port)
 #   PO_FLEET_ROOT=/path/to/your/projects     (if your fleet is not $PORT_ROOT)
-#   PO_WATCH_WEBHOOK=https://hooks.example/… (POST alerts here when any fire)
 # The leading `-` makes the file optional: with no override the unit watches
 # $PORT_ROOT, else ~/port, and only prints alerts to the journal.
 # The user manager reads no shell profile, so an exported
@@ -31,11 +30,11 @@ EnvironmentFile=-%h/.config/projects-orchestrator/watch.env
 # your copy if you want every firing to run every gate from scratch. The CI
 # and cloud probes always run regardless — remote state moves without any
 # local edit, so it is refreshed every firing.
-ExecStart=/bin/sh -c 'exec %h/.local/bin/projects-orchestrator watch --changed-only --interval "${PO_WATCH_INTERVAL:-3600}" --root "${PO_FLEET_ROOT:-${PORT_ROOT:-%h/port}}" ${PO_WATCH_WEBHOOK:+--webhook "$PO_WATCH_WEBHOOK"}'
+ExecStart=/bin/sh -c 'exec %h/.local/bin/projects-orchestrator watch --changed-only --interval "${PO_WATCH_INTERVAL:-3600}" --root "${PO_FLEET_ROOT:-${PORT_ROOT:-%h/port}}"'
 
-# `watch` exits 1 when the pass was EVENTFUL — an alert fired and (if
-# configured) was pushed. That is a run that worked and has something for you
-# to look at, not a failed unit; 2 (no fleet found) still marks the unit
+# `watch` exits 1 when the pass was EVENTFUL — an alert fired (it is printed,
+# never pushed: watch has no webhook). That is a run that worked and has something
+# for you to look at, not a failed unit; 2 (no fleet found) still marks the unit
 # failed, which is exactly right for a mispointed PO_FLEET_ROOT.
 SuccessExitStatus=1
 

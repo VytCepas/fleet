@@ -630,22 +630,23 @@ def test_watch_records_history_read_back_by_history_command(fleet_dir: Path, cap
     assert "test:" in capsys.readouterr().out
 
 
-def test_watch_posts_alerts_to_webhook(fleet_dir: Path, monkeypatch) -> None:
+def test_watch_has_no_webhook_flag(fleet_dir: Path) -> None:
+    # The box has one notifier (the scheduler that runs watch, which reads its exit code and
+    # --json), so a scheduled watch can never be pointed at a webhook.
+    with pytest.raises(SystemExit) as exc:
+        main(["watch", "--root", str(fleet_dir), "--webhook", "https://hooks.example/x"])
+    assert exc.value.code == 2
+
+
+def test_watch_reports_alerts_but_never_pushes_them(fleet_dir: Path, monkeypatch, capsys) -> None:
     make_project(fleet_dir, "alpha", tooling={"test": "false"})
-    posted = {}
-    monkeypatch.setattr(
-        cli, "post_webhook", lambda url, alerts: posted.update(url=url, alerts=alerts) or True
-    )
-    main(["watch", "--root", str(fleet_dir), "--webhook", "https://hooks.example/x"])
-    assert posted["url"] == "https://hooks.example/x" and posted["alerts"]
-
-
-def test_watch_quiet_fleet_never_calls_the_webhook(fleet_dir: Path, monkeypatch) -> None:
-    make_project(fleet_dir, "alpha", tooling={"lint": "true", "test": "true"})
-    calls: list[str] = []
-    monkeypatch.setattr(cli, "post_webhook", lambda url, _alerts: calls.append(url) or True)
-    main(["watch", "--root", str(fleet_dir), "--webhook", "https://hooks.example/x"])
-    assert calls == []
+    posts: list[object] = []
+    monkeypatch.setattr(cli, "post_webhook", lambda url, _alerts: posts.append(url) or True)
+    monkeypatch.setattr(cli, "post_payload", lambda url, _payload: posts.append(url) or True)
+    assert main(["watch", "--root", str(fleet_dir), "--task", "test", "--json"]) == 1
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["alerts"] and "webhook" not in payload
+    assert posts == []
 
 
 def test_watch_probes_remote_ci_before_alerting(fleet_dir: Path, monkeypatch) -> None:
