@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import logging
 import re
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -38,7 +39,7 @@ class AuditFinding:
     Attributes:
         project: Project name.
         category: Probe name (``config``/``contract``/…/``drift``/``memory``/
-            ``freshness``).
+            ``kit``/``freshness``).
         severity: ``ok`` | ``warn`` | ``fail``.
         message: Short human-readable detail.
     """
@@ -151,6 +152,71 @@ def _freshness_finding(name: str, cached: dict[str, CheckResult] | None) -> Audi
     return AuditFinding(name, "freshness", WARN, "never checked")
 
 
+_KIT_TIMEOUT = 30
+
+
+def _kit_finding(descriptor: ProjectDescriptor) -> AuditFinding:
+    """Hold the project to the kit its repo-kind inherits (the standard kit, #1436, category ``kit``; never raises).
+
+    The project's own ``.agents/config.yaml`` declares ``repo-kind:``; the list it must carry is the standard's ``kit.tsv``,
+    read by the project's vendored ``standard-kit.sh --carries``. Fleet reimplements neither: a repo that declares no
+    kind is not judged, and one that declares a kind but vendors no reader is a finding, because nothing can say what it lacks.
+    """
+    root = descriptor.path
+    text = ""
+    for layout in (".agents", ".claude"):
+        try:
+            text = (root / layout / "config.yaml").read_text(encoding="utf-8")
+            break
+        except OSError:
+            continue  # expected: a scaffold has one layout dir, so the other one is absent
+    else:
+        return AuditFinding(descriptor.name, "kit", OK, "no config.yaml: the kit is not judged")
+    match = re.search(r"^repo-kind:[ \t]*[\"']?([A-Za-z0-9._-]+)", text, re.MULTILINE)
+    if match is None:
+        return AuditFinding(
+            descriptor.name, "kit", OK, "declares no repo-kind: the kit is not judged"
+        )
+    kind = match.group(1)
+    tool = root / "vendor" / "naming" / "standard-kit.sh"
+    if not tool.is_file():
+        return AuditFinding(
+            descriptor.name,
+            "kit",
+            WARN,
+            f"declares repo-kind {kind} but vendors no standard-kit.sh to judge it",
+        )
+    try:
+        proc = subprocess.run(  # noqa: S603 — argv list, no shell; the tool is the project's own vendored copy
+            ["sh", str(tool), "--carries", str(root), "--kind", kind],  # noqa: S607
+            capture_output=True,
+            text=True,
+            timeout=_KIT_TIMEOUT,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        _log.debug("kit check failed for %s: %s", descriptor.name, exc)
+        return AuditFinding(descriptor.name, "kit", WARN, f"the kit check could not run: {exc}")
+    if proc.returncode == 0:
+        return AuditFinding(descriptor.name, "kit", OK, f"carries every item its kind {kind} lists")
+    lacks = [
+        ln.strip()
+        for ln in (proc.stdout + proc.stderr).splitlines()
+        if ln.strip().startswith("kit:")
+    ]
+    if proc.returncode == 1 and lacks:
+        more = f" (+{len(lacks) - 3} more)" if len(lacks) > 3 else ""
+        return AuditFinding(
+            descriptor.name, "kit", WARN, f"as {kind}: " + "; ".join(lacks[:3]) + more
+        )
+    return AuditFinding(
+        descriptor.name,
+        "kit",
+        WARN,
+        f"the kit check exited {proc.returncode}: unchecked, not a pass",
+    )
+
+
 def audit_project(
     descriptor: ProjectDescriptor, cached: dict[str, CheckResult] | None = None
 ) -> AuditReport:
@@ -168,6 +234,7 @@ def audit_project(
     if drift is not None:
         findings.append(drift)
     findings.extend(_memory_findings(descriptor))
+    findings.append(_kit_finding(descriptor))
     findings.append(_freshness_finding(descriptor.name, cached))
     return AuditReport(project=descriptor.name, findings=tuple(findings))
 
