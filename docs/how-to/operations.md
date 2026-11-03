@@ -1,3 +1,9 @@
+---
+kind: how-to
+owner: @VytCepas
+status: unreviewed
+---
+
 # Operate the orchestrator's own state
 
 Everything the orchestrator remembers between runs lives in two directories, and

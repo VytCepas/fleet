@@ -1,0 +1,22 @@
+# repo-kinds.tsv (harbor#950) — the top-level entries each kind of repo carries (standards/naming.md §8).
+#
+# WHY THIS FILE EXISTS. Every repo, harbor included (D-37), mirrors one filesystem schema, so a
+# reader who knows one repo can find their way in any other. The schema lives here so the
+# scaffolder (`yard`) can create repos from it, a lint can check it, and the fleet controller
+# (`fleet`) can report what drifted. Checked by `bin/lint-name.sh --check repo-kind <dir>` and by
+# nothing else, never by a tree scan: harbor's own layout moves in harbor#956, and a scan would
+# report the migration plan as findings. The kind a directory is judged as is the `repo-kind:` line
+# of its .agents/config.yaml; the check reads `required` (a missing or wrong-sort entry is
+# name.repo-kind) and ignores `optional` and any entry the kind does not list.
+#
+# standard_version: 2.0.0
+#
+# COLUMNS  id <TAB> required <TAB> optional <TAB> note
+#   required, optional   space-separated entries; a trailing / marks a directory
+#   machine-read kinds (policy/ standards/ contracts/ registries/) are present only when non-empty
+id	required	optional	note
+control-plane	README.md AGENTS.md CLAUDE.md LICENSE CHANGELOG.md justfile .agents/config.yaml bin/ tests/ docs/	policy/ standards/ contracts/ registries/ fixtures/ context-rules/ skills/ agents/ templates/ githooks/ access/ evals/	harbor
+scaffolder	README.md AGENTS.md CLAUDE.md LICENSE CHANGELOG.md justfile .agents/config.yaml src/ tests/ templates/ docs/	standards/ contracts/ registries/ fixtures/ skills/	yard
+fleet-controller	README.md AGENTS.md CLAUDE.md LICENSE CHANGELOG.md justfile .agents/config.yaml src/ tests/ docs/	contracts/ registries/ fixtures/	fleet
+workload	README.md AGENTS.md CLAUDE.md justfile .agents/config.yaml docs/	bin/ src/ tests/ fixtures/ skills/ agents/ clients/ context-rules/ registries/	<domain>-<name> (D-45)
+data	README.md AGENTS.md CLAUDE.md justfile .agents/config.yaml docs/	models/ tests/ fixtures/ registries/	transformation and ingestion repos; one dialect from dialects.tsv (D-33)

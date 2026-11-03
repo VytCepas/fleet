@@ -1,0 +1,61 @@
+# versions.tsv (harbor#1426) — the one register of the runtimes, tools, libraries and GitHub Actions every governed repo pins.
+#
+# WHY THIS FILE EXISTS. Fourteen repos pinned the same things at different values: requires-python 3.11, 3.12 and 3.13, a
+# .python-version of 3.14 in a repo that requires 3.11, ruff `>=0.4` beside `>=0.14`, three SHAs of actions/checkout and a mutable
+# `@v5` tag in eight places on the path of the one required gate. yard's tools/pinned-third-party.toml already had the right
+# semantics (a vetted pin, hold_at with a reason, upgrade-as-PR, never auto-merged) for one tool in one repo; this is that model
+# for the box. The drift check (fleet's projects_orchestrator.versions) prints each repo's difference from this file, and a
+# difference is either fixed or a row in the repo's exception file with its reason. A pin found in a repo that this file does not
+# name is red (standard.version-registered, in the drift check), so a new tool cannot be pinned in only one place.
+#
+# standard_version: 2.0.0
+#
+# COLUMNS  id <TAB> axis <TAB> name <TAB> value <TAB> sha <TAB> hold_at <TAB> hold_reason <TAB> upgrade <TAB> note
+#   id          <axis>.<name>, kebab, unique
+#   axis        runtime | tool | library | action
+#   name        what is pinned: python-floor and python-version-file for the interpreter, the package name for a tool or library,
+#               owner/repo for an action
+#   value       the registered version. A runtime floor is the lowest version a repo may require (requires-python >=value); a
+#               python-version-file is the exact version; a tool or library is the lowest specifier a repo may declare (>=value,
+#               or ^value for an npm major); an action is the release tag its sha is
+#   sha         the full 40-hex commit the action's tag points at, verified against the action's release; - for every other axis
+#   hold_at     a release at or above which the update bot never proposes and a pin is refused; - when there is none
+#   hold_reason why it is held (required when hold_at is set); - otherwise
+#   upgrade     pr (the bot opens a PR, never auto-merged) | manual (a person bumps it; the bot ignores it)
+#   note        the evidence or the decision behind the value
+id	axis	name	value	sha	hold_at	hold_reason	upgrade	note
+runtime.python-floor	runtime	python-floor	3.11	-	-	-	manual	three repos already require it and it is the lowest any repo needs; a repo may require more with an exception row
+runtime.python-version-file	runtime	python-version-file	3.11	-	-	-	manual	yard's template pins the file to the floor (PI-954), so a scaffold and the repos already on the floor agree; 3.12, 3.13 and 3.14 files are exceptions until aligned
+tool.uv	tool	uv	0.11	-	-	-	pr	the version the box runs (0.11.28 measured 2026-11-02)
+tool.ruff	tool	ruff	0.14	-	-	-	pr	the highest floor any repo declares; ruff>=0.4 is the drift
+tool.mypy	tool	mypy	1.18	-	-	-	pr	the highest floor any repo declares
+tool.pytest	tool	pytest	8.4	-	-	-	pr	the highest floor any repo declares
+library.typescript	library	typescript	5	-	-	-	pr	every repo that carries it declares ^5; the register holds the major
+tool.bun	tool	bun	1.4	-	-	-	manual	the version the box runs (1.4.3 measured 2026-11-02); setup-bun with bun-version latest is a mutable pin and is drift
+tool.ccr	tool	@musistudio/claude-code-router	2.0.0	-	3.0.0	3.x rewrites the user's Claude Code settings and needs the #870 rework (yard#1005)	pr	folded in from yard's tools/pinned-third-party.toml, which is now a view of this row; it sits on the request path of a scaffolded project, so a bump is a vetted PR, never automatic
+action.actions-checkout	action	actions/checkout	v6.0.3	df4cb1c069e1874edd31b4311f1884172cec0e10	-	-	pr	nine repos run this SHA, which is the v6.0.3 release commit (verified against the release tags 2026-11-02); the workflow comment says v6
+action.astral-sh-setup-uv	action	astral-sh/setup-uv	v8.1.0	08807647e7069bb48b6ef5acd8ec9567f424441b	-	-	pr	v8.1.0 release commit (verified 2026-11-02)
+action.extractions-setup-just	action	extractions/setup-just	v4	53165ef7e734c5c07cb06b3c8e7b647c5aa16db3	-	-	pr	the v4 tag commit (verified 2026-11-02)
+action.oven-sh-setup-bun	action	oven-sh/setup-bun	v2	0c5077e51419868618aeaa5fe8019c62421857d6	-	-	pr	the v2 tag commit (verified 2026-11-02)
+action.ossf-scorecard-action	action	ossf/scorecard-action	v2.4.3	4eaacf0543bb3f2c246792bd56e8cdeffafb205a	-	-	pr	the v2.4.3 release commit (verified 2026-11-02)
+action.github-codeql-action-upload-sarif	action	github/codeql-action/upload-sarif	v3	411c4c9a36b3fca4d674f06b6396b2c6d23522c6	-	-	pr	kept as found: the v3 tag has since moved to another commit, so the bot's first PR bumps it
+action.softprops-action-gh-release	action	softprops/action-gh-release	v3	718ea10b132b3b2eba29c1007bb80653f286566b	-	-	pr	kept as found: the v3 tag has since moved to another commit, so the bot's first PR bumps it
+action.pypa-gh-action-pypi-publish	action	pypa/gh-action-pypi-publish	v1.14.0	cef221092ed1bacb1cc03d23a2d87d1d172e277b	-	-	pr	the v1.14.0 release commit (verified 2026-11-02)
+action.actions-attest-build-provenance	action	actions/attest-build-provenance	v4	0f67c3f4856b2e3261c31976d6725780e5e4c373	-	-	pr	kept as found: the v4 tag has since moved to another commit, so the bot's first PR bumps it
+action.orhun-git-cliff-action	action	orhun/git-cliff-action	v4	f50e11560dce63f7c33227798f90b924471a88b5	-	-	pr	kept as found: the v4 tag has since moved to another commit, so the bot's first PR bumps it
+action.gitleaks-gitleaks-action	action	gitleaks/gitleaks-action	v3	e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e	-	-	pr	the v3 tag commit (verified 2026-11-02)
+action.dorny-paths-filter	action	dorny/paths-filter	v3	d1c1ffe0248fe513906c8e24db8ea791d46f8590	-	-	pr	kept as found: the v3 tag has since moved to another commit, so the bot's first PR bumps it
+action.actions-upload-pages-artifact	action	actions/upload-pages-artifact	v3	56afc609e74202658d3ffba0e8f6dda462b719fa	-	-	pr	the v3 tag commit (verified 2026-11-02)
+action.actions-deploy-pages	action	actions/deploy-pages	v4	d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e	-	-	pr	the v4 tag commit (verified 2026-11-02)
+action.actions-rust-lang-setup-rust-toolchain	action	actions-rust-lang/setup-rust-toolchain	v1	166cdcfd11aee3cb47222f9ddb555ce30ddb9659	-	-	pr	the v1 tag commit (verified 2026-11-02); yard's scaffold templates pin it
+action.actions-setup-go	action	actions/setup-go	v5	40f1582b2485089dde7abd97c1529aa768e1baff	-	-	pr	the v5 tag commit (verified 2026-11-02); yard's scaffold templates pin it
+action.actions-upload-artifact	action	actions/upload-artifact	v7	043fb46d1a93c77aae656e7c1c64a875d1fc6a0a	-	-	pr	kept as found: the v7 tag has since moved to another commit, so the bot's first PR bumps it; yard's scaffold templates pin it
+action.aquasecurity-trivy-action	action	aquasecurity/trivy-action	v0.36.0	ed142fd0673e97e23eac54620cfb913e5ce36c25	-	-	pr	the v0.36.0 tag commit (verified 2026-11-02); yard's scaffold templates pin it
+action.docker-build-push-action	action	docker/build-push-action	v6	10e90e3645eae34f1e60eeb005ba3a3d33f178e8	-	-	pr	the v6 tag commit (verified 2026-11-02); yard's scaffold templates pin it
+action.docker-login-action	action	docker/login-action	v3	c94ce9fb468520275223c153574b00df6fe4bcc9	-	-	pr	the v3 tag commit (verified 2026-11-02); yard's scaffold templates pin it
+action.docker-setup-buildx-action	action	docker/setup-buildx-action	v3	8d2750c68a42422c14e847fe6c8ac0403b4cbd6f	-	-	pr	the v3 tag commit (verified 2026-11-02); yard's scaffold templates pin it
+action.golangci-golangci-lint-action	action	golangci/golangci-lint-action	v8	4afd733a84b1f43292c63897423277bb7f4313a9	-	-	pr	the v8 tag commit (verified 2026-11-02); yard's scaffold templates pin it
+action.goreleaser-goreleaser-action	action	goreleaser/goreleaser-action	v6	e435ccd777264be153ace6237001ef4d979d3a7a	-	-	pr	the v6 tag commit (verified 2026-11-02); yard's scaffold templates pin it
+action.hadolint-hadolint-action	action	hadolint/hadolint-action	v3.1.0	54c9adbab1582c2ef04b2016b760714a4bfde3cf	-	-	pr	the v3.1.0 tag commit (verified 2026-11-02); yard's scaffold templates pin it
+action.opentofu-setup-opentofu	action	opentofu/setup-opentofu	v1	9d84900f3238fab8cd84ce47d658d25dd008be2f	-	-	pr	the v1 tag commit (verified 2026-11-02); yard's scaffold templates pin it
+action.taiki-e-install-action	action	taiki-e/install-action	v2	50414676f9f5d50a65992c6dd2ed02641263226c	-	-	pr	kept as found: the v2 tag has since moved to another commit, so the bot's first PR bumps it; yard's scaffold templates pin it

@@ -62,6 +62,9 @@ _EXEMPT: dict[str, str] = {
     "tests/check/fleet/test_decision_record_citations.py": "this file: its docstring and cases name bare numbers on purpose",
 }
 
+#: A verbatim copy of the naming standard's package, held byte-for-byte by its MANIFEST (`just docs-check`).
+_VENDORED_PREFIX = "vendor/naming/"
+
 _UPGRADE_BASES = (".agents/.upgrade-base.json", ".claude/.upgrade-base.json")
 _PROJECTION = ".claude/.projection.json"
 _DESCRIPTOR = ".agents/config.yaml"
@@ -167,7 +170,7 @@ def scanned() -> dict[str, str]:
     managed = _managed()
     texts = {}
     for path in files:
-        if path in _EXEMPT:
+        if path in _EXEMPT or path.startswith(_VENDORED_PREFIX):
             continue
         try:
             text = (_ROOT / path).read_text(encoding="utf-8")

@@ -1,0 +1,15 @@
+# fresh-checks.tsv — the generated files this repo carries, each with the check that proves it current.
+#
+# file <TAB> check (sh, run from the repo root; exit 0 fresh, 1 stale, anything else unchecked) <TAB> fix <TAB> needs
+# `needs` is the path that must exist for the row to apply (default: the file itself). A generated file carries one
+# comment line `generated-by: <command>` in its first 20 lines, and <command> is the `fix` column here: the lint
+# (vendor/naming/doc-shape.sh) holds the header and this table equal both ways. Run the checks with
+# `sh vendor/naming/doc-fresh-verify.sh`; `just lint` runs them through `just docs-check`.
+#
+# NOT LISTED, because the file cannot carry the header or has no offline regeneration: .agents/CAPABILITIES.md and
+# .claude/CAPABILITIES.md (written by project-init on scaffold and upgrade), .agents/.upgrade-base.json and
+# .claude/.upgrade-base.json (JSON has no comment syntax), the .claude/ mirror of .agents/ (byte copies written by
+# project-init). The vendored contract snapshot under fixtures/ is checked by `just contract-freshness`.
+.agents/docs/CODE_MAP.md	uv run python .agents/scripts/gen_code_map.py --check	just code-map	
+.github/CODEOWNERS	uv run python .agents/scripts/gen_codeowners.py --check	uv run python .agents/scripts/gen_codeowners.py --write	
+vendor/naming/MANIFEST.tsv	sh vendor/naming/standard-vendor.sh --check --offline .	sh <standard checkout>/bin/standard-vendor.sh .	

@@ -1,0 +1,54 @@
+# registers.tsv (harbor#950) — every `register:` namespace a reference or a stamp can name, and where its ids are found.
+#
+# WHY THIS FILE EXISTS. `[<register>:<id>]` stamps and `[system/]register:id` references (D-20) used a
+# namespace nobody listed, and the draft wrote `check:`, `lint:` and `rule:` for the same thing (09a). One
+# row per namespace says which registry file resolves it and, for the controls, which census finds the
+# ids the tree actually carries: the judge holds each census id against controls.tsv, so an id that is not
+# a row is red (name.control-unregistered). A control type with no register here is a shape finding.
+#
+# THE FILE COLUMN IS THE LINT'S FILE LIST (harbor#950). bin/lint-name.sh reads the registry files this
+# column names, each once, terms.tsv first and the rest in row order, and no others. A standards/naming/*.tsv
+# with no row is therefore a file the lint never read: it is red (name.registry-shape), in a tree run, in
+# `--check registry` and in `--self-test`. A new register is its file plus its row here, and nothing in
+# bin/lint-name.sh changes for the shape of its header, WHY line and standard_version.
+#
+# standard_version: 2.0.0
+#
+# COLUMNS  id <TAB> file <TAB> select <TAB> census <TAB> note
+#   id      the namespace as it is written before the colon
+#   file    the registry file whose first column holds the ids, or - when the ids live elsewhere
+#   select  <column>=<value> narrows the file to this namespace; - when the whole file is the namespace
+#   census  <extractor>:<path> finds the ids the tree carries; - when nothing in the tree is carried
+#           outside the registry. Extractors: lint-rules (rule "<id> ..." lines), guard-rules
+#           (floor_block <guard> ... <rule> calls, as <guard>:<rule>), checks-table (the docs/reference/checks.md
+#           register), inject-ids (the id: of every rule pack in a folder, comma-separated folders),
+#           hook-rules (the id of every `# control: <id>` line in a git hook, comma-separated files),
+#           required-checks:<file>=<repo> (a repo's rows), lines (one id per line, for fixtures)
+#   note    what the namespace holds
+id	file	select	census	note
+term	terms.tsv	-	-	a word and every closed set
+alias	aliases.tsv	-	-	a confined or rejected spelling and the term to use
+exemption	exemptions.tsv	-	-	a name the standard does not judge, with its reason
+surface	surfaces.tsv	-	-	a place a name is rendered, with its grammar
+kind	kinds.tsv	-	-	a kind of artifact
+register	registers.tsv	-	-	this file
+rename	renames.tsv	-	-	a path rename the standard orders, one row each: the codemod's only input (harbor#996)
+frozen	frozen.tsv	-	-	a name a stranger types or reads, frozen with the date it first appeared; written by bin/standard-frozen-generate.sh, never by hand (harbor#1276)
+repo	-	-	-	a registered repo or archive under PORT_ROOT: its row is the private layer's repos.tsv (contracts/private-layer.md), never a file in core, because it names the operator's repos (harbor#966)
+repo-kind	repo-kinds.tsv	-	-	the top-level entries each kind of repo carries (§8)
+dialect	dialects.tsv	-	-	a naming dialect a repo may register for objects the standard does not name (D-33, D-53)
+lint	controls.tsv	type=lint	lint-rules:bin/lint-conventions.sh	a static rule; bin/lint-conventions.sh's ids are the census, bin/lint-name.sh's are read from this registry
+admission	controls.tsv	type=admission	guard-rules:bin/admission-*.sh	a refusal one of the admission guards prints as [<guard>:<rule>]
+check	controls.tsv	type=check	checks-table:docs/reference/checks.md	a scheduled check; its output is stamped [check:<id>]
+injection	controls.tsv	type=injection	inject-ids:context-rules	a rule pack the injection engine adds to a session
+ci	controls.tsv	type=ci	required-checks:contracts/required-checks.tsv=VytCepas/harbor	a required CI check on harbor's main
+hook	controls.tsv	type=hook	hook-rules:hooks/pre-commit,hooks/pre-push,hooks/commit-msg	a refusal or gate in one of harbor's git hooks, marked `# control: <id>` beside the code that decides it (harbor#1422)
+vale	controls.tsv	type=vale	-	a prose rule of the Vale config generated from aliases.tsv
+label-axis	label-axes.tsv	-	-	an issue label as <axis>:<value> with the legacy label it replaces; renders issue-taxonomy.tsv (harbor#978)
+writer	writers.tsv	-	-	a script that creates a named thing, and the command patterns that find one (harbor#978)
+word	words.tsv	-	-	an English or technical word a name may carry beyond the terms (D-18, harbor#984)
+schema	schemas.tsv	-	-	the schema of every .tsv register: columns, key, references, owner and reader (harbor#1424)
+label-retired	label-retired.tsv	-	-	a label the register retires: no register row carries it, and the sync plans its removal (harbor#1427)
+verb	verbs.tsv	-	-	a task verb a repo kind must carry in its justfile, with its meaning and exit contract (harbor#1428)
+version	versions.tsv	-	-	a runtime, tool, library or action version the box pins, with hold_at and its reason (harbor#1426)
+kit	kit.tsv	-	-	what each repo kind inherits: register, control family, tool, template, check and pin items with share and vendoring (harbor#1436)

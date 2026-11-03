@@ -25,6 +25,14 @@ lint:
     bash .agents/scripts/lint_context_budget.sh
     uv run python .agents/scripts/check_test_contract.py exit-codes
     PYTEST_ADDOPTS="-o addopts=" uv run --with pytest --with hypothesis python .agents/scripts/check_test_contract.py discovery
+    just docs-check
+
+# docs front matter and generated-file headers, strict: every docs/**/*.md carries kind, owner and status; a
+# generated-by: header equals its contracts/fresh-checks.tsv row, and each listed file equals a fresh regeneration
+# (judged by the vendored doc-shape.sh and doc-fresh-verify.sh; the meta-file standard).
+[doc("docs front matter + generated-file freshness (gates/doc-check.sh --strict)")]
+docs-check:
+    sh gates/doc-check.sh --strict
 
 # static type check (strict mode per mypy.ini; add mypy with `uv add --dev mypy`)
 # no-op on a fresh scaffold with no src/ yet — mypy errors on a missing path.

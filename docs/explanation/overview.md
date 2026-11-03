@@ -1,3 +1,9 @@
+---
+kind: explanation
+owner: @VytCepas
+status: unreviewed
+---
+
 # Overview: what the orchestrator does and how it relates to project-init
 
 A single-page tour of the whole system — the capabilities, the

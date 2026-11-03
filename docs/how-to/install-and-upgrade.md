@@ -1,3 +1,9 @@
+---
+kind: how-to
+owner: @VytCepas
+status: unreviewed
+---
+
 # Install and upgrade the orchestrator itself
 
 This guide is about the `projects-orchestrator` tool on your machine. It is not

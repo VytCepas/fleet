@@ -1,0 +1,449 @@
+# terms.tsv (harbor#950) — THE ONLY PLACE the controlled vocabulary exists.
+#
+# WHY THIS FILE EXISTS. A name is a tuple of vocabulary terms rendered once per surface
+# (standards/naming.md §0). Before this file the vocabulary lived in prose, in the lint's
+# regexes and in each reader's head, so a word could mean two things and nothing noticed.
+# bin/lint-name.sh reads this file and nothing else for the term sets, and the glossary,
+# naming guide, CLI tree, label set and Vale config are generated from it. Change a term
+# here and the lint result and the generated glossary change with no other edit.
+#
+# standard_version: 2.0.0
+#
+# SEED. The concept rows come from research/02 §1 (219 concepts, harbor#949), with the
+# standard's own classes laid over them: families and verbs (§3), kinds (§4), layers (§5),
+# domains, clients and abbreviations (D-18, D-26, D-35), plus two classes the lint needs:
+# `system` (a repo name usable as an env prefix, D-15) and `extension` (§6.3's registered
+# extension chain), and `subject` (the lint subject families of §3). Every closed set is a
+# class here, never prose or code (09a S4): mode, outcome, decision, severity, state (D-29),
+# control-type, moment, function, lifecycle (D-62), and level (D-57).
+#
+# COLUMNS  id <TAB> class <TAB> pref <TAB> broader <TAB> vsm <TAB> stability <TAB> successor
+#          <TAB> src <TAB> alt <TAB> depends_on <TAB> definition
+#   id          the canonical word: lowercase kebab, a digit never starts a word
+#   class       one or more of family verb domain client abbreviation kind layer concept
+#               system extension subject level mode outcome decision severity priority state
+#               control-type moment function lifecycle share relation modality tier strength commit-type, comma-separated.
+#               family and verb never overlap. level terms form one containment chain by `broader` (D-57).
+#               relation: the typed edges a policy row or a kind's required_relations names (research/15 §3).
+#               modality: duty, prohibition, permission (ODRL). tier: constitutional, policy, standard, repo,
+#               control, highest first; a tier term that shares its id with a family or concept carries the class too.
+#               strength: constitutional, policy, standard, local (harbor#1027): which rule wins, a different axis from where a rule binds.
+#   pref        the preferred term in prose
+#   broader     the parent term's id, or -; gives the hierarchy (lint -> audit -> control-plane)
+#   vsm         viable-system function, shown in the glossary and never in a name (D-27)
+#   stability   experimental | stable | deprecated; a deprecated row names its successor (D-19)
+#   alt         discovery labels from the seed, `; `-separated. NOT enforced: the aliases the
+#               lint rejects or confines are rows in aliases.tsv. On a mode term the labels are
+#               the legacy spellings of that mode a controls.tsv cell may still use and the lint
+#               reads as it (D-64: advisory and inform are read as warn, never written).
+#   depends_on  the families this family may use through their public entry, comma-separated,
+#               or - (M3, D-60). On a severity: the one priority term (p0..p3) it sets by default (harbor#1001). It is the allowed edge list the reference graph (harbor#996)
+#               will check; the lint refuses a name that is not a family and any cycle.
+id	class	pref	broader	vsm	stability	successor	src	alt	depends_on	definition
+metasystem	concept,level	metasystem	-	S1-S5	experimental	-	research/02: cybernetics; TURCHIN	Harbor (loose); the estate; the box estate; system of systems	-	The whole: the managed repositories plus the control mechanism that produces and regulates them
+platform	concept	platform	metasystem	S2-S5	experimental	-	research/02: platform engineering; CNCF-PLAT; Beer's S2-S5 'metasystem'	Harbor; the trio plus harbor; L0+L2+L3	-	The systems that serve and regulate workloads: control plane, fleet controller, scaffolder, memory store and proposal pipeline
+workload	concept,share	workload repository	repo	S1	experimental	-	research/02: platform engineering; CNCF-PLAT (platform users); VSM S1 operation	Ship; governed repo; governed project; scaffolded repo; child (Fleet); managed repo (prior)	-	A managed repository whose purpose is domain work, regulated by the platform. As a share value: shared with whoever uses that workload repo or its pack (D-83)
+repo	concept,tier	managed repository	system	-	experimental	-	research/02: control-plane engineering; ANSIBLE (managed node)	project	-	Any git repository under the control plane, platform or workload
+system	concept,level	system	domain	-	experimental	-	research/02: systems engineering; ISO15288; BACKSTAGE System	tree; root	-	Parts plus relations with a boundary and an environment; here one repository or one root
+subsystem	concept,level	subsystem	system	-	experimental	-	research/02: systems engineering; ISO15288	workstream; layer	-	A group of families inside a system that serves one VSM function. It is registry-only (D-57): it shows on no surface, and a family's broader term names it. A family belongs to a subsystem and is not one
+component	concept,level	component	family	-	experimental	-	research/02: BACKSTAGE Component; OUSTERHOUT module	module; part; capability; tool	-	A unit with one interface that is built, tested and deployed as one: a script, hook, skill, check or rule set
+element	concept,level	element	component	-	experimental	-	research/02: ISO15288 system element	row; case; entry; item	-	One addressable member of a component: one rule, one assertion, one registry row
+domain	concept,level	domain	metasystem	S1	experimental	-	research/02: BACKSTAGE Domain; DDD bounded context	field; ship-name prefix (#948); G5 domain	-	A field of work that groups workloads sharing vocabulary and purpose
+level	concept	level	metasystem	-	experimental	-	research/02: software architecture (layered style); VSM recursion level	rank; layer (architecture)	-	One of the seven named steps of the containment hierarchy (D-57): metasystem, domain, system, subsystem, family, component, element. Each has one parent level. It is containment, never dependency order; L0-L3 are retired aliases
+recursion	concept	recursion	viable	S1-S5	experimental	-	research/02: cybernetics; VSM	mirroring; self-reference	-	Each viable system contains viable systems with the same five functions
+viable	concept	viable system	system	S1-S5	experimental	-	research/02: cybernetics; VSM	VSM	-	A system that survives change because it has operations, coordination, control, audit, intelligence and policy functions
+boundary	concept	system boundary	system	S2	experimental	-	research/02: systems theory; DDD context map	docs/explanation/boundary.md; estate boundary; aboard/ashore line	-	The line deciding what belongs to a system and what is its environment, with the rule that decides ownership
+interface	concept	interface	system	S2	experimental	-	research/02: software engineering; OUSTERHOUT; BACKSTAGE API	seam (CONTRACTS); crossing; API	-	The surface across which two systems interact, specified by a contract
+seam	concept	seam	component	-	experimental	-	research/02: software engineering; FEATHERS	-	-	A place where behaviour can be changed without editing in place
+dependency-rule	concept	dependency rule	interface	S2	experimental	-	research/02: software architecture (Clean Architecture dependency rule); REPO contracts/host-profile.md	dependency points down; consumes never absorbs	-	Dependencies point one way: workloads to platform contracts, platform systems to harbor's standard and contracts, and no cycles between systems (D-60); the one declared upward read is advisory and absent-safe
+environment	concept	environment	system	S4	experimental	-	research/02: systems theory; VSM (environment)	outside world	-	Everything outside a system's boundary that affects it: the harness, vendors, upstream, clients
+upstream	concept	upstream	environment	S4	experimental	-	research/02: software supply chain	PAI	-	An external project whose assets the platform vendors at a pinned version
+host	concept	host	environment	-	experimental	-	research/02: systems administration; ANSIBLE (hosts)	box; machine; device; the Mac	-	One machine and its harness configuration directory
+workspace	concept	workspace root	host	S2	experimental	-	research/02: tooling (multi-root workspace); REPO contracts/port-root.md	PORT_ROOT; ~/port; REPOS base	-	The directory managed repositories live under side by side
+control-plane	concept	control plane	platform	S3, S3*, S5	experimental	-	research/02: control-plane engineering; K8S-CTRL, K8S-ADM	Helm; governance core (prior); the floor + constitution	-	The host-level layer that sets policy, admits or refuses agent actions, and records decisions
+data-plane	concept	data plane	metasystem	S1	experimental	-	research/02: control-plane engineering	session work; the agent's actions	-	Agent sessions' tool calls acting on repositories, hosts and cloud: what the control plane governs
+fleet	concept,system	fleet	platform	S1	stable	-	research/02: control-plane engineering; GKE-FLEET; repo name and env prefix (D-15)	fleet.yaml set	-	The set of managed repositories registered for collective health, policy and change
+fleet-controller	concept	fleet controller	platform	S2, S3, S3*	experimental	-	research/02: K8S-CTRL (controller); GKE-FLEET	Fleet; projects-orchestrator; fleet (repo, after rename); orchestrator (prior)	-	The system that observes fleet state and acts across it: checks, drift, repair runs, rollouts, deploys
+scaffolder	concept	scaffolder	platform	S2, S3	experimental	-	research/02: BACKSTAGE Template/Scaffolder	Yard; project-init; yard (repo, after rename); wizard	-	Creates managed repositories from templates and upgrades them
+proposal-pipeline	concept	proposal pipeline	control-plane	S4	experimental	-	research/02: cybernetics (ultrastability, VSM S4); ITIL change enablement	Shipwright; harbor#744; self-improvement loop; G1-G6	-	Capture, propose, build to standard, approve, retire: the human-gated loop that changes the platform
+memory-store	concept,system,kind	memory store	platform	S2, S4	stable	-	research/02: agentic engineering; CC-DOCS (memory); repo name and env prefix (D-8, D-15)	Log; helm-log; ~/.claude/MEMORY	-	The git-backed store of notes, work log and knowledge shared by every session on every host. As a kind: the memory-store/ folder and what it holds (D-8, D-24)
+system-model	concept	system model	control-plane	S4	experimental	-	research/02: cybernetics; CA70 (good regulator)	Register (unbuilt); topology; TOPOLOGY.md; ESTATE.md; LINEAGE	-	A model of every part and its wiring that answers 'what breaks if'
+operations	concept	operations	viable	S1	experimental	-	research/02: VSM System 1	S1; ships' work	-	The primary activities a system exists to perform
+coordination	concept	coordination	viable	S2	experimental	-	research/02: VSM System 2	S2	-	Damping oscillation between operations through shared standards, schedules and registries
+control	concept,tier	control	viable	S3	experimental	-	research/02: VSM System 3	S3; enforcement	-	Setting rules and resources for operations and enforcing them in real time
+audit	family	audit	control-plane	S3*	stable	-	research/02: VSM System 3*; standard §3 (D-17)	S3*	-	Sporadic, independent inspection of operations that bypasses their own reporting
+intelligence	concept	intelligence	viable	S4	experimental	-	research/02: VSM System 4	S4; research; adaptation	-	Looking outward and forward: what the system must change to stay viable
+policy-function	concept	policy (function)	viable	S5	experimental	-	research/02: VSM System 5	S5; the operator plus the constitution	-	Identity and closure: balancing control against intelligence
+algedonic	concept	algedonic signal	viable	alg	experimental	-	research/02: VSM	pulse alert; SessionStart judge line	-	An alarm that bypasses intermediate levels and reaches policy directly
+regulator	concept	regulator	control	S3	experimental	-	research/02: cybernetics; ASHBY	controller	-	Whatever keeps an essential variable within bounds against disturbance
+variety	concept	requisite variety	regulator	S3	experimental	-	research/02: cybernetics; ASHBY	Ashby's law; hidden variety	-	A regulator needs at least as many responses as the disturbances it must absorb
+essential-variable	concept	essential variable	regulator	S3	experimental	-	research/02: cybernetics; ASHBY	-	-	A variable that must stay within bounds for the system to remain viable
+control-loop	concept	control loop	control	S3	experimental	-	research/02: K8S-CTRL	feedback loop	-	A non-terminating loop that observes state and acts to move it toward desired state
+desired-state	concept	desired state	control-loop	S3	experimental	-	research/02: K8S-CTRL (spec)	spec; source of truth	-	The specified state: tracked source, pins, registries
+observed-state	concept	observed state	control-loop	S3*	experimental	-	research/02: K8S-CTRL (current state)	current state; machine state; live state	-	The measured state of the deployed system
+drift	family,state	drift	deploy	S3*	stable	-	research/02: control-plane engineering; REPO lint X-rules; standard §3 (D-17)	stale install	-	Observed state diverging from desired state
+reconcile	verb	reconcile	control-loop	S3*	stable	-	research/02: KUBEBUILDER (Reconcile); REPO contracts/finding.md; standard §3	findings reconcile; sync	-	One pass that compares desired with observed state and acts on, or records, the difference
+ultrastability	concept	ultrastability	intelligence	S4	experimental	-	research/02: cybernetics; ASHBY	double-loop learning	-	A slow loop that changes the fast loop's rules when an essential variable leaves its bounds
+constraint	concept	safety constraint	control	S3	experimental	-	research/02: STPA; LEV11	guard rule (behavioural); invariant (for actions)	-	A condition that must be enforced to prevent a hazard
+control-action	concept	control action	data-plane	S1	experimental	-	research/02: STPA	tool call	-	A command a controller issues to a controlled process; here an agent's tool call
+unsafe-action	concept	unsafe control action	control-action	S3	experimental	-	research/02: STPA	destructive verb; dangerous shape; blocked shape	-	A control action that leads to a hazard in some context
+hazard	concept	hazard	constraint	S3	experimental	-	research/02: STPA	risk	-	A system state that, with worst-case conditions, leads to a loss
+loss	concept	loss	hazard	S5	experimental	-	research/02: STPA	incident impact	-	An outcome stakeholders find unacceptable: leaked credential, deleted data, false report
+process-model	concept	process model	regulator	S3	experimental	-	research/02: STPA; CA70	the agent's picture; context	-	A controller's belief about the state of what it controls; the agent's context
+policy	family,kind,tier,strength	policy	policy-function	S5	stable	-	research/02: security; NIST-53 (-1 policy controls); OPA; standard §3 (D-17); standard §4	rules; standing policy; doctrine (misused)	-	A normative statement set saying what must or must not happen, and who decides
+constitution	concept	constitution	policy	S5	experimental	-	research/02: agentic engineering; CAI	policy/constitution.md; ~/.claude/CLAUDE.md (deployed); Helm Constitutional Rules; L0 constitution	-	The top-level policy, deployed into every session's resident context
+invariant	concept	invariant	constitution	S5	experimental	-	research/02: software engineering (invariant)	constitutional rule; the five; constitutional tier; core invariant (prior)	-	A rule no scope may override; there are exactly five
+default-rule	concept	default rule	constitution	S5	experimental	-	research/02: software engineering (defaults)	plain rule	-	A rule a project scope may override
+rationale	concept	rationale	policy	S5	experimental	-	research/02: ISO42010 (rationale); DIATAXIS explanation	doctrine; DOCTRINE/; *-expanded.md; design rationale (prior)	-	Why a rule exists: the incidents and reasoning, read on demand and never resident
+standard	family,kind,tier,strength	standard	policy	S2	stable	-	research/02: software engineering; ISO usage; standard §4; standard D-63	convention; CONTRACTS/naming.md; logging.md; test-contract.md; platforms.md; install standard	-	A normative format or practice every system follows: naming, logging, tests, platforms. Family (D-63): the standard's own subsystem: harbor standard render, harbor standard check, ids standard.*
+contract	kind	interface contract	interface	S2	stable	-	research/02: software engineering; CDC; standard §4	seam (CONTRACTS sense); frozen seam; CONTRACTS/*.md	-	A versioned specification of one interface between systems, with a schema and shared fixtures
+schema	extension	schema	contract	S2	stable	-	research/02: software engineering; SEMVER; harbor#950 (standard §6.3)	descriptor.schema.json; schema_version	-	A machine-checkable structure for a contract payload, carrying schema_version
+decision-record	kind	decision record	policy	S5	stable	-	research/02: NYGARD; MADR; standard §4	ADR; ADR; decision brief; decided (operator); M-ticket decision; DEAD-ENDS entry (rejected)	-	A record of one decision: context, options, choice, status, consequences
+decision-status	concept	decision status	decision-record	S5	experimental	-	research/02: MADR	SETTLED; decided; refused; not executed	-	proposed, accepted, rejected, deprecated or superseded
+scope	family	scope	coordination	S2	stable	-	research/02: CC-DOCS (settings scopes); standard §3 (D-17)	context (key); aboard/ashore	-	Where a configuration applies: project scope inside a marked repo, user scope outside
+project-scope	concept	project scope	scope	S2	experimental	-	research/02: CC-DOCS	context: repo; aboard; governed; in-repo	-	Inside a repository carrying the scope marker; its own rules win except the invariants
+user-scope	concept	user scope	scope	S2	experimental	-	research/02: CC-DOCS	context: ambient; ashore; ambient; global	-	Outside every marked repository; host defaults apply
+precedence	concept	scope precedence	scope	S2	experimental	-	research/02: CC-DOCS (precedence)	detect-and-defer; deferral; stand-down; fail-toward-repo	-	Which rule wins when two scopes apply: project over user, never over an invariant
+scope-marker	concept	scope marker	scope	S2	experimental	-	research/02: REPO contracts/marker.md	detect-and-defer marker; boundary marker; .agents/ directory; context: key	-	The file whose presence, and whose context: value, puts a directory in project scope
+scope-resolution	concept	scope resolution	scope	S2	experimental	-	research/02: REPO contracts/marker.md, port-root.md	marker walk; floor_in_repo	-	The walk up from the working directory that finds the innermost marker, stopping before HOME and PORT_ROOT
+vocabulary	concept	controlled vocabulary	standard	S2	experimental	-	research/02: SKOS (ConceptScheme)	glossary; lexicon; docs/src/vocabulary.html	-	The concept scheme: one preferred label per concept, alt labels disjoint
+reserved-word	concept	reserved word	vocabulary	S2	experimental	-	research/02: programming languages (reserved word); REPO CONTRACTS/naming.md	reserved layer word	-	A label no component may take because it names a system
+approval	concept	approval gate	policy	S5	experimental	-	research/02: human-in-the-loop; ITIL change authority	human gate; human-gated act; operator yes; merge (as the gate)	-	A change takes effect only after a named person's explicit yes
+operator	concept	operator	policy-function	S5	experimental	-	research/02: SRE (operator); STPA (human controller)	Operator; owner; the user	-	The person who owns policy, approves changes and dispositions findings
+allowlist	concept	allowlist	policy	S5	experimental	-	research/02: security	self-heal allowlist (prior); HEAL rows; port-paths-exempt.tsv	-	An enumerated list of permitted exceptions, written by a person and checked
+admission	family,control-type	admission control	control-plane	S3	stable	-	research/02: control-plane engineering; K8S-ADM; NIST-162 (PEP); standard §3 (D-17)	guardrail (prior); guarding; the floor's guard layer	-	Validating or refusing a request before it changes anything
+admission-hook	concept	admission hook	admission	S3	experimental	-	research/02: CC-HOOKS; K8S-ADM (validating webhook); NIST-162 (PEP)	guard; guard-*.sh; floor guard; guardrail; guard hook	-	A PreToolUse hook that returns allow, ask or deny for one tool call
+admission-rule	concept	admission rule	admission-hook	S3	experimental	-	research/02: REPO CONTRACTS lint F5; GATEKEEPER (constraint)	guard rule; shape; block id; CRED-01	-	One pattern an admission hook matches, identified as <rule>.<shape>
+permission-rule	concept	permission rule	admission	S3	experimental	-	research/02: CC-DOCS (permissions)	permissions.deny; deny list; B1 layer	-	A harness-evaluated allow, ask or deny entry, enforced before any hook runs
+baseline	concept	security baseline	control-plane	S3	experimental	-	research/02: security; NIST-53 (800-53B control baselines); CIS	floor; security floor; guardrail layer (prior); Helm floor	-	The minimum controls under every session: permission rules, admission hooks, integrity monitor
+defence-in-depth	concept	defence in depth	baseline	S3	experimental	-	research/02: security; NIST glossary	three layers	-	Layered controls of different strength, none of which is the boundary alone
+kill-switch	concept	kill switch	baseline	S3	experimental	-	research/02: SRE; FOWLER-FT (ops toggle)	HARBOR_ADMISSION_DISABLE; HARBOR_GUARDRAIL_DISABLE (prior)	-	One control that disables every admission hook at once
+integrity-monitor	concept	integrity monitor	baseline	S3*	experimental	-	research/02: security; NIST-53 SI-7 (integrity), file integrity monitoring	integrity gate; B6; admission-integrity.sh	-	Detects that the controls themselves were altered and refuses to open the session
+pin	concept	pin	desired-state	S3	experimental	-	research/02: supply chain (pinning, lockfile)	.helm-pins; .helm-baseline; pinned SHA; ~/.harbor-upstream	-	A recorded hash or version that deployed state must equal
+state-file	concept	state file	control-plane	S3	experimental	-	research/02: REPO contracts/control-plane-state.md	.helm-* files; helm state	-	A control-plane file on the host, classed integrity (sessions may not write it) or cache
+merge-gate	concept	merge gate	admission	S3	experimental	-	research/02: GitHub branch protection (required status checks)	merge backstop; govern-hook --box; merge-check	-	Refuses a merge without a green verdict on the head commit
+enforcement-mode	concept	enforcement mode	admission	S3	experimental	-	research/02: GATEKEEPER (enforcementAction)	advisory; ADVISORY; block mode; report mode	-	How a rule acts on a violation: deny (block), warn (advisory) or dryrun (shadow)
+shadow-mode	concept	shadow mode	enforcement-mode	S3	experimental	-	research/02: GATEKEEPER (dryrun); SRE	dry-run enforcement; report-only	-	Running a rule and recording its decisions without enforcing them
+sandbox	concept	sandbox	control	S3	experimental	-	research/02: security (sandboxing)	dev sandbox; test-sandbox-make.sh; --dir target	-	A disposable copy of the configuration surfaces for testing changes
+confinement	concept	confinement	control	S3	experimental	-	research/02: security (sandboxing); harbor#555	Claude Code sandbox; Seatbelt; bubblewrap	-	The OS boundary around each shell command an agent runs: the files it may write and the hosts it may reach, enforced by Seatbelt or bubblewrap
+credential-boundary	concept	credential boundary	control	S3	experimental	-	research/02: security; NIST-53 AC-6 (least privilege)	credential separation; the identity is the wall	-	Identity separation, which is the real wall; the rules are warnings
+least-privilege	concept	least privilege	credential-boundary	S3	experimental	-	research/02: NIST-53 AC-6	-	-	Each identity holds only the grants its task needs
+workload-guard	concept	workload admission hook	admission-hook	S3	experimental	-	research/02: REPO project-init templates	prod_guard; prod-safety guard; github_command_guard; DAG guard	-	A scaffolded hook in a workload that refuses destructive commands or out-of-lifecycle git actions
+context	family	context engineering	control-plane	S2	stable	-	research/02: agentic engineering; ANTH-CTX; standard §3 (D-17)	context family	-	Choosing what enters the model's context, when, and at what cost
+context-budget	concept	context budget	context	S3	experimental	-	research/02: agentic engineering; ANTH-CTX	context-budget.sh; registries/context-baseline.tsv; resident surface ceiling	-	The token ceiling for resident context and the measurement against it
+resident	concept	resident context	context	S2	experimental	-	research/02: agentic engineering; ANTH-CTX (just-in-time)	always-on; resident surface	-	Context loaded into every session, as opposed to on demand
+injection	concept,control-type	context injection	context	S3	experimental	-	research/02: agentic engineering; CC-HOOKS (additionalContext)	inject-hook; just-in-time governance; rule-pack engine	-	A hook that adds a rule to the session at the moment its predicate matches
+injection-rule	kind	injection rule	injection	S3	stable	-	research/02: REPO contracts/injection-rule.md; standard §4	rule pack; pack; inject.d file; just-in-time rule (prior)	-	A markdown file whose frontmatter predicate decides when its body is injected
+predicate	concept	predicate	injection-rule	S3	experimental	-	research/02: logic; GATEKEEPER (match)	frontmatter keys; when	-	The match condition of an injection rule: event, tool, path, scope, once
+provenance-stamp	concept	provenance stamp	injection	S3	experimental	-	research/02: security (nonce); SPOT (marking)	governance note; [HARBOR GOVERNANCE <token>]; signed reminder (prior)	-	The session nonce carried by a control-plane note so it can be told apart from external content
+nonce	concept	session nonce	provenance-stamp	S3	experimental	-	research/02: security	provenance token; govern-token	-	A one-time value announced at session start that proves a note's origin
+spotlighting	concept	spotlighting	context	S3	experimental	-	research/02: AI security; SPOT	annotate-web; EXTERNAL CONTENT banner	-	Marking untrusted input so the model treats it as data
+prompt-injection	concept	prompt injection	hazard	S3	experimental	-	research/02: OWASP-LLM	injected instruction	-	External content that tries to issue instructions to the agent
+preflight	concept	preflight check	context	S3*	experimental	-	research/02: operations (aviation preflight)	session verdicts; SessionStart line; preflight warnings	-	Checks run at session start that warn before work begins
+memory-index	concept	memory index	memory-store	S2	experimental	-	research/02: CC-DOCS (memory)	MEMORY.md; always-on tier, INDEX-FULL.md (full index)	-	The bounded list of memory pointers loaded into every session
+memory-route	concept	memory route	memory-store	S2	experimental	-	research/02: REPO bin/memory-route.sh	blind repo (when absent)	-	The binding between a working directory and the memory store it loads
+agent-instructions	concept	agent instructions file	context	S5	experimental	-	research/02: AGENTSMD; CC-DOCS	AGENTS.md; CLAUDE.md; .agents/project-init.md	-	The repository file every agent surface reads first
+harness	concept	harness	environment	-	experimental	-	research/02: agentic engineering; CC-DOCS	Claude Code; CC; the CLI	-	The agent runtime that runs the model loop, tools, permissions and hooks
+surface	concept	agent surface	harness	-	experimental	-	research/02: REPO project-init README	IDE integration	-	One harness product a workload is configured for: Claude Code, Codex, Cursor and others
+session	concept,family,moment	session	data-plane	S1	experimental	-	research/02: CC-DOCS	conversation; run	-	One harness run from start to stop, made of turns
+hook	kind,control-type	hook	component	S3	stable	-	research/02: CC-HOOKS; GIT githooks; standard §4	engine hook; git hook	-	A handler the harness or git runs at a named event
+hook-event	concept	hook event	hook	-	experimental	-	research/02: CC-HOOKS	SessionStart; PreToolUse; PostToolUse; Stop; pre-commit; pre-push	-	A named moment a hook binds to; platform names are kept verbatim
+skill	family,kind	skill	catalog	S1	stable	-	research/02: CC-DOCS (skills); standard §3 (D-17); standard §4	book; pack	-	A packaged instruction set with a description the harness can select or the user can invoke
+model-invocable	concept	model-invocable skill	skill	S1	experimental	-	research/02: CC-DOCS (disable-model-invocation)	ambient skill; model-invoked (prior)	-	A skill listed every session and selectable by the model
+user-only	concept	user-only skill	skill	S1	experimental	-	research/02: CC-DOCS (disable-model-invocation: true)	invoked-only; on-demand; hidden skill; user-invoked (prior)	-	A skill hidden from the listing, invoked by name only
+catalog	concept	skill catalog	control-plane	S2	experimental	-	research/02: BACKSTAGE (software catalog)	skill book; skill-book	-	The generated index of every skill and CLI with its path, hidden ones included
+command	concept	slash command	component	S1	experimental	-	research/02: CC-DOCS	command; commands/	-	A user-typed prompt shortcut the harness expands
+subagent	concept	subagent	session	S1	experimental	-	research/02: CC-DOCS; ANTH-AGENTS	delegate; fork; worker	-	A delegated agent with its own context that returns one result
+mcp-server	concept	MCP server	environment	-	experimental	-	research/02: MCP	connector; MCP	-	A process exposing tools to the harness over the Model Context Protocol
+context-pack	concept	context pack	system-model	S4	experimental	-	research/02: REPO skills/casefile	casefile	-	Every hop, owner and probe of a problem, assembled before any diagnosis
+decision-log	concept	decision log	audit	S3*	experimental	-	research/02: OPA (decision logs); NIST-92	guard-decision ledger; ledger; floor_log_decision; OBSERVE-1; audit log (prior)	-	An append-only record of every admission decision: rule, verdict, shape, hash
+outcome-log	concept	outcome log	audit	S3*	experimental	-	research/02: REPO docs/reference/checks.md judge row (harbor#465)	tool-outcome ledger; failure-capture	-	A per-call record of what a tool call did after admission
+triage	concept	triage	audit	S3*	experimental	-	research/02: SRE (incident triage)	judge; ledger JUDGE; failure triage (prior)	-	Reading the logs off the session path and promoting repeated failures into finding candidates
+finding	kind	finding	audit	S3*	stable	-	research/02: SARIF (result); OCSF Finding; standard §4	violation; defect	-	One rule currently firing, with its key, fingerprint, age and disposition
+finding-key	concept	finding key	finding	S3*	experimental	-	research/02: SARIF (ruleId); REPO contracts/finding.md	key	-	<source>/<rule>, the identity that joins a finding to the registered rule
+fingerprint	concept	fingerprint	finding	S3*	experimental	-	research/02: SARIF (fingerprints, partialFingerprints)	digest	-	A hash over the finding's subject set, used to tell a recurrence from a change
+disposition	concept	disposition	finding	S5	experimental	-	research/02: vulnerability management; SARIF (suppression status)	triage state (prior); finding:accepted label	-	A person's verdict on a finding: accepted or superseded; 'fixed' is the reconcile's
+finding-source	concept	finding source	finding	S3*	experimental	-	research/02: SARIF (tool/run)	tier (finding.md); emitter	-	Where a finding was emitted: admission, lint, check, ci or review
+lane	concept	remediation lane	finding	S5	experimental	-	research/02: security operations (AWS Config automatic vs manual remediation)	lane; HEAL/PROPOSE/DECIDE	-	What happens to a finding: auto-remediate, propose, or decide, declared per key by a person
+auto-remediation	concept	auto-remediation	lane	S3	experimental	-	research/02: security operations	HEAL; self-heal; heal (findings)	-	A deterministic repair, enumerated in an allowlist, that runs without a person
+lint	family,control-type	static analysis	audit	S3*	stable	-	research/02: software engineering; SARIF; standard §3 (D-17)	lint; lint-conventions.sh; harbor lint	-	Rules evaluated over source without running it
+lint-rule	kind	lint rule	lint	S3*	stable	-	research/02: SARIF (reportingDescriptor); standard §4	rule ids X5, T9, F14	-	One static rule with an id, a message and a fix
+full-scan	concept	full scan	lint	S3*	experimental	-	research/02: static analysis practice	census	-	One run of every rule that prints every result
+ratchet	concept	ratchet	lint	S3*	experimental	-	research/02: static analysis practice (ratcheting)	log-exempt.tsv; py-ratchet; topology-ratchet	-	A list of grandfathered violations that may only shrink
+test-suite	concept	test suite	audit	S3*	experimental	-	research/02: ISTQB	suite; *-test.sh; just test	-	A set of assertions run as one entry point with one summary line
+hermetic-test	concept	hermetic test	test-suite	S3*	experimental	-	research/02: HERMETIC	hermetic tier	-	A test that depends on nothing outside its fixtures
+smoke-test	concept	smoke test	test-suite	S3*	experimental	-	research/02: ISTQB	live tier; harbor check; deploy-live-verify.sh	-	A read-only check that the installed host works
+fixture	kind	golden fixture	contract	S2	stable	-	research/02: testing (golden-file testing); standard §4	fixtures/; cases.json; golden	-	Expected inputs and outputs every consumer of a contract runs against
+mutation-test	concept	mutation test	test-suite	S3*	experimental	-	research/02: DEMILLO	prove; mutation pass; red-proof; teeth; 'watch it go red'	-	Break the subject on purpose and confirm the checker notices
+control-case	concept	negative control	mutation-test	S3*	experimental	-	research/02: experimental method (negative control)	mandatory control; valid-but-unusual control	-	A valid but unusual input the checker must not refuse
+canary	concept	canary	audit	S3*	experimental	-	research/02: SRE-WB	campaign canary; prove canary; antibot-canary	-	A small early exposure that fails first
+falsifier	concept	falsifier	audit	S3*	experimental	-	research/02: POPPER	Verify line; Falsifier section	-	The observation that would disprove a claim
+eval	family,kind	evaluation	audit	S4	stable	-	research/02: agentic engineering; TAU; standard §3 (D-17); standard §4	docs/reports/evals.md; EV-n; DS-n study; E1-E3	-	A measured study of whether the agent environment reaches known-good answers
+pass-k	concept	pass^k	eval	S4	experimental	-	research/02: TAU	pass-hat-k	-	The probability all k trials of a task succeed
+red-team	concept	adversarial review	audit	S3*	experimental	-	research/02: security (red team)	Pass N; attack pass; red-team skill	-	An attack pass by a reviewer trying to break the control
+review	concept	review	audit	S3*	experimental	-	research/02: software engineering (IEEE 1028 reviews)	REVIEW-<date>.md; implementation-readiness review; PR review	-	An independent assessment of a plan or change with recorded findings
+audit-report	concept	audit report	audit	S3*	experimental	-	research/02: audit practice	AUDITS/<date>-*.md; measurement-audit	-	A dated sweep of a whole system against a question
+evidence-class	concept	evidence class	audit	S3*	experimental	-	research/02: research method (levels of evidence)	[P] [C] [M] [I] tags	-	The grade of a claim's support: probed, code-read, memory, intent
+exogenous	concept	exogenous measurement	audit	S3*	experimental	-	research/02: econometrics; REPO docs/explanation/verification-expanded.md	endogenous (opposite)	-	A measurement from a signal independent of the pipeline's own output
+false-positive	concept	false positive	audit	S3*	experimental	-	research/02: statistics	FP	-	A control that fires on ordinary, correct work
+replay	concept	traffic replay	test-suite	S3*	experimental	-	research/02: testing (shadow traffic)	hook-replay; T0; replay corpus	-	Re-running hooks against recorded real tool calls
+observability	concept	observability	audit	S3*	experimental	-	research/02: control theory; OTEL	observe; harbor observe	-	Inferring internal state from emitted outputs
+telemetry	concept	telemetry	observability	S3*	experimental	-	research/02: OTEL (signals)	usage; skill-fire; skill-usage	-	Measurements a component emits for observation
+check	family,kind,control-type	scheduled check	observability	S3*	stable	-	research/02: monitoring (Nagios/Sensu check); SRE; standard §3 (D-17); standard §4	check; monitor; probe; docs/reference/checks.md row	-	A registered job that evaluates one watched condition on a schedule and writes a result
+check-registry	concept	check registry	check	S2	experimental	-	research/02: SRE; REPO docs/reference/checks.md	docs/reference/checks.md	-	The one list of every scheduled check, with how to disable it
+check-result	concept	check result	check	S3*	experimental	-	research/02: monitoring (Sensu event)	receipt; cache/checks/<id>.json	-	The per-run record a check writes: id, time, status, subjects
+alerting	concept	alerting	observability	alg	experimental	-	research/02: SRE (alerting on symptoms)	pulse; pulse-notify; monitor (prior)	-	Edge-triggered notification when a watched condition changes
+alert	family	alert	observability	alg	stable	-	research/02: SRE; standard §3 (D-17)	[check:<id>] stamp; desktop notification	-	One notification stamped with the id of the check that raised it
+meta-monitoring	concept	meta-monitoring	observability	S3*	experimental	-	research/02: SRE	liveness; who watches the reconcile	-	Watching that the watchers ran
+unwired	concept	unwired component	observability	S3*	experimental	-	research/02: REPO contracts/idle-tools.txt	idle tool; idle-tools.txt	-	Built and asserting something, but run by nothing
+unmonitored	concept	unmonitored component	observability	S3*	experimental	-	research/02: REPO contracts/unwatched.txt	unwatched; unwatched.txt	-	A component no check watches
+status-report	concept	status report	observability	S3*	experimental	-	research/02: reporting	docs/generated/status.md; harbor status	-	Generated counts the repository states about itself
+observed-report	concept	observed-state report	observability	S3*	experimental	-	research/02: control-plane engineering	build/observed.md; status --observed	-	Generated on demand from host state, never committed
+dashboard	concept	dashboard	observability	S3*	experimental	-	research/02: SRE	harbor dash; build/dashboard.html; fleet HTML snapshot	-	A rendered view of status for a person
+statusline	concept	status line	observability	alg	experimental	-	research/02: CC-DOCS (statusLine)	glyph; fleet glyph; subagent glyph	-	The harness's one-line live indicator
+freshness	concept	freshness	observability	S3*	experimental	-	research/02: data engineering (source freshness)	staleness; harbor fresh; contract freshness	-	Whether an artifact was regenerated or re-verified recently enough to trust
+deploy	family,moment	deploy	control-plane	S3	stable	-	research/02: software delivery; standard §3 (D-17)	deploy.sh; the one live entry; harbor deploy; install	-	Install source artifacts at their point of use on the live host, through one entry with preflight, snapshot and verify
+installer	concept	installer	deploy	S3	experimental	-	research/02: software delivery	*-install.sh; payload	-	The component that writes one payload to a target
+target	concept	deploy target	deploy	S3	experimental	-	research/02: software delivery	--live; live dir; CLAUDE_CONFIG_DIR	-	The configuration directory an installer writes, always named (--live or --dir)
+dry-run	concept	dry run	deploy	S3	experimental	-	research/02: software delivery	plan (without --apply)	-	Print what would change and change nothing
+restore	concept	restore	deploy	S3	experimental	-	research/02: operations (backup and restore)	deploy-restore.sh; backups/	-	Put the configuration back from a deploy snapshot
+bootstrap	concept	bootstrap	deploy	S3	experimental	-	research/02: operations	deploy-bootstrap.sh; a fresh machine	-	Bring a fresh host to a deployable state
+hardening	concept	hardening	baseline	S3	experimental	-	research/02: CIS	SEC-0; deploy-harden.sh	-	Removing permissive defaults and adding locks on a host
+install-drift	concept	install drift	drift	S3*	experimental	-	research/02: control-plane engineering	drift-install.sh; renew-check; lag; undeployed	-	A deployed copy that differs from its tracked source, or source not yet deployed
+projection	concept	projection	deploy	S2	experimental	-	research/02: REPO project-init ADR-027	mirror; .claude/ from .agents/; generated mirror	-	A generated copy of a canonical tree in the form one surface reads
+shim	concept	shim	deploy	S2	experimental	-	research/02: software engineering	shims.tsv	-	A thin forwarding executable at a stable path
+lifecycle	concept	repository lifecycle	scaffolder	S3	experimental	-	research/02: ISO15288 (life cycle)	ship lifecycle	-	scaffold, register, active, upgrade, deregister, archive (nautical stages: launch, berth, refit, dry dock, laid up)
+upgrade	verb	upgrade	lifecycle	S3	stable	-	research/02: software delivery; standard §3	refit; project-init upgrade	-	Re-applying newer templates to an existing workload without overwriting owner choices
+registration	concept	registration	lifecycle	S2	experimental	-	research/02: ANSIBLE (inventory)	berth	-	Adding a repository to the fleet inventory
+template	kind	template	scaffolder	S2	stable	-	research/02: BACKSTAGE Template; standard §4	templates/base; preset; client-template	-	Parameterised source the scaffolder renders into a workload
+overlay	concept	overlay	template	S2	experimental	-	research/02: REPO project-init README	concern; preset option	-	An optional template layer a workload opts into: memory, lifecycle, governance, surfaces
+rollout	concept	rollout	fleet-controller	S3	experimental	-	research/02: SRE-WB	campaign	-	One change applied across the fleet, canary first
+repair-run	concept	agent repair run	agent-run	S3	experimental	-	research/02: agentic engineering	heal (Fleet); heal --all	-	A scoped headless agent that fixes a red gate and lands a draft PR
+agent-run	concept	agent run	fleet-controller	S1	experimental	-	research/02: agentic engineering; REPO projects-orchestrator README	work run; projects-orchestrator work	-	A bounded headless agent execution in its own worktree whose only output is a draft PR
+worktree	family	worktree	coordination	S2	stable	-	research/02: GIT; standard §3 (D-17)	session worktree; .worktrees/<repo>/*; legacy harbor-wt-*	-	A separate git working tree for one session or run
+scheduler	concept	job scheduler	check	S2	experimental	-	research/02: operations	launchd; systemd timer; com.harbor.<id>	-	The OS service that runs checks on schedule
+registry	kind	registry	coordination	S2	stable	-	research/02: BACKSTAGE (catalog); ANSIBLE (inventory); standard §4	register; table; .tsv; list	-	An enumerated inventory where each row has an id and is the single source for that set
+inventory	concept	fleet inventory	registry	S2	experimental	-	research/02: ANSIBLE (inventory)	fleet.yaml; projects.tsv (session-facing twin)	-	The registry of which repositories the fleet reports on
+roots	concept	roots table	registry	S2	experimental	-	research/02: REPO contracts/roots.tsv	roots.tsv	-	Every named root and the base it hangs off
+descriptor	concept	descriptor	contract	S2	experimental	-	research/02: BACKSTAGE (descriptor format)	.agents/config.yaml; descriptor contract	-	The machine-readable manifest a repository emits about itself
+capability-inventory	concept	capability inventory	descriptor	S2	experimental	-	research/02: REPO project-init (PI-374)	CAPABILITIES.md	-	Generated list of what a scaffold gave a workload's agent
+host-profile	concept	host profile	contract	S2	experimental	-	research/02: REPO contracts/host-profile.md	box profile; box-profile.toml	-	Optional host-declared defaults the scaffolder reads, absent-safe
+ssot	concept	single source of truth	coordination	S2	experimental	-	research/02: software engineering	SSOT; golden record; derive, don't state	-	One authoritative copy; every other copy is generated from it
+log-format	concept	log format	standard	S2	experimental	-	research/02: REPO contracts/logging.md	library-log.sh; run log	-	The shared line shape, tags, fix line and summary line for every tool
+exit-code	concept	exit-code contract	contract	S2	experimental	-	research/02: POSIX convention; REPO contracts/cli.md	exit codes; COULD-NOT-LOOK	-	What each process exit status means, shared by text and --json modes
+cli	abbreviation	command-line interface	interface	S2	stable	-	research/02: software engineering; standard §1.1 (D-18)	harbor; cu; gcx	-	A system's verb surface
+issue	concept	issue	coordination	S2	experimental	-	research/02: GitHub; agile	ticket; harbor#N; tracker task	-	One tracked unit of work with acceptance criteria
+acceptance	concept	acceptance criterion	issue	S3*	experimental	-	research/02: agile (acceptance criteria)	Done when; Verify:; Done-when	-	A done-condition that names its verifier
+epic	concept	epic	issue	S2	experimental	-	research/02: agile	EPIC; docs/reports/platform-epic.md	-	A parent issue grouping related issues toward one outcome
+backlog	concept	backlog	issue	S2	experimental	-	research/02: agile	docs/reports/platform-build-tickets.md; plan of record; workstreams A-K	-	The ordered set of planned issues
+label-taxonomy	concept	label taxonomy	registry	S2	experimental	-	research/02: REPO contracts/issue-taxonomy.tsv	five-axis labels	-	The closed set of issue labels on named axes
+knowledge-base	concept	knowledge base	memory-store	S4	experimental	-	research/02: knowledge management	pilot; practice layer; runbook library (prior)	-	Know-how the system model cannot show: runbooks, known errors, negative results, evaluations
+work-log	concept	work log	memory-store	S2	experimental	-	research/02: operations (activity log)	WORK/sessions; worklog	-	What each session did, host-partitioned and synced across hosts
+note	concept	memory note	memory-store	S4	experimental	-	research/02: CC-DOCS (memory)	feedback note; KNOWLEDGE note; lesson	-	One typed, cross-linked lesson in the memory store
+runbook	kind	runbook	knowledge-base	S3	stable	-	research/02: SRE; ITIL; standard §4	RUNBOOKS/IC-n	-	The remediation procedure for one incident class; describes, does not execute
+incident-class	concept	incident class	runbook	S3	experimental	-	research/02: ITIL (incident model)	IC-n	-	A recurring failure type with one runbook
+known-error	concept	known-error record	knowledge-base	S4	experimental	-	research/02: ITIL (known error)	playbook (estate); PLAYBOOK/PB-n	-	A solved case: how to recognise it again, and whether the fix held
+negative-result	concept	negative result	knowledge-base	S4	experimental	-	research/02: research method (negative results)	estate DEAD-ENDS DE-NN	-	An investigation route that returns nothing, recorded so it is not walked again
+postmortem	concept	postmortem	knowledge-base	S4	experimental	-	research/02: SRE (postmortem culture)	Incident <date> sections; pass write-ups	-	A blameless write-up of one incident: impact, cause, fixes
+handover	kind	handover	knowledge-base	S2	stable	-	research/02: operations (shift handover); standard §4	docs/how-to/handover.md; checkpoint; developer handoff	-	The resume brief for whoever works next: what is open, what not to re-derive, how to start
+citation-register	concept	citation register	registry	S2	experimental	-	research/02: research practice	docs/reference/citations.md	-	Every external URL the documents cite, with checked status
+vendoring-record	concept	vendoring record	registry	S4	experimental	-	research/02: supply chain (vendoring; SBOM)	PROVENANCE.md; vendor/skills/PROVENANCE.md; FORK_CHANGES	-	Every asset taken from upstream: pinned version, what changed on intake, what was not taken
+intake	concept	intake decision	vendoring-record	S4	experimental	-	research/02: supply chain	vendoring verdict; vendoring.md	-	refuse, depend, vendor, or re-author, for one external candidate
+coverage-matrix	concept	coverage matrix	intelligence	S4	experimental	-	research/02: requirements engineering (traceability / gap analysis)	docs/reference/coverage.md; coverage sweep	-	Each upstream capability against its disposition here: built, ticketed, refused
+identity	concept	identity	credential-boundary	S3	experimental	-	research/02: security (IAM)	account; as whom	-	An account, service account or system user that holds grants
+access-route	concept	access route	registry	S2	experimental	-	research/02: REPO ACCESS/README.md	route card; card; ACCESS/<system>.md	-	One system's tested way in: identity, grant, command that proves it
+access-policy	concept	access-method policy	policy	S5	experimental	-	research/02: REPO ACCESS/ROUTING.md	ROUTING.md; the ladder; browser router	-	Which mechanism to reach a system with, in order: cli > api > mcp > browser
+identity-precedence	concept	identity precedence	access-policy	S5	experimental	-	research/02: security (IAM)	ACCOUNT-PRECEDENCE.md	-	Which identity is primary for what, and why
+escalation-policy	concept	escalation policy	policy	alg	experimental	-	research/02: PD-ESC; ITIL	ESCALATION.md; T1/T2/T3	-	Who decides which class of question, and what to hand them
+proposal	family	proposal	proposal-pipeline	S4	stable	-	research/02: ITIL (change request); standard §3 (D-17)	PROPOSE finding; candidate; suggestion	-	A drafted change awaiting a person's approval
+capture	concept	capture	proposal-pipeline	S4	experimental	-	research/02: knowledge management	G2	-	Drafting lesson candidates from a session at its end, at most three
+generator	concept	component generator	proposal-pipeline	S2	experimental	-	research/02: BACKSTAGE Template; Yeoman generators	author kit; harbor new; G1	-	Produces a new component plus every registry row and test the wiring checklist names
+promotion	concept	promotion ladder	proposal-pipeline	S4	experimental	-	research/02: knowledge management (maturity ladder)	knowledge ladder; rungs 1-5	-	candidate, note, field standard, user-only skill, enforcement; each climb approved
+retirement	concept	retirement	proposal-pipeline	S4	experimental	-	research/02: software lifecycle (deprecation, sunset)	G6; growth budget	-	Removing a component that usage evidence shows nobody uses
+gate	family	gate	admission	-	stable	-	standard §3 (D-17)	-	-	Family: merge gate, PR wait
+test	family,kind,extension,commit-type	test	audit	-	stable	-	standard §3 (D-17); standard §4; harbor#950 (standard §6.3)	-	-	Family: suites, mutation, fixtures
+doc	family	doc	audit	-	stable	-	standard §3 (D-17)	-	-	Family: derived docs and their truth
+status	family	status	observability	-	stable	-	standard §3 (D-17)	-	-	Family: status reports, dashboard, status line
+housekeeping	family	housekeeping	deploy	-	stable	-	standard §3 (D-17)	-	-	Family: cleanup
+ci	family,abbreviation,control-type,moment,commit-type	ci	coordination	-	stable	-	standard §3 (D-17); standard §1.1 (D-18)	-	-	Family: CI tooling
+library	family	library	standard	-	stable	-	sitting B Q2 (harbor#961), 2026-10-27	-	-	Family: shared helpers sourced by other scripts, never run (fs, log, alert, gate)
+memory	family	memory	memory-store	-	stable	-	standard §3 (D-17)	-	-	Family: notes, work log, ideas
+access	family	access	control-plane	-	stable	-	standard §3 (D-17)	-	-	Family: routes, identity matrix
+install	verb	install	-	-	stable	-	standard §3	-	-	Verb: the last word of a name that performs it
+remove	verb	remove	-	-	stable	-	standard §3	-	-	Verb: the last word of a name that performs it
+verify	verb	verify	-	-	stable	-	standard §3	-	-	Verb: the last word of a name that performs it
+run	verb	run	-	-	stable	-	standard §3	-	-	Verb: the last word of a name that performs it
+report	verb,kind,layer	report	-	-	stable	-	standard §3; standard §4; standard §5	-	-	Verb: the last word of a name that performs it
+generate	verb	generate	-	-	stable	-	standard §3	-	-	Verb: the last word of a name that performs it
+notify	verb	notify	-	-	stable	-	standard §3	-	-	Verb: the last word of a name that performs it
+resolve	verb	resolve	-	-	stable	-	standard §3	-	-	Verb: the last word of a name that performs it
+repair	verb	repair	-	-	stable	-	standard §3	-	-	Verb: the last word of a name that performs it
+apply	verb	apply	-	-	stable	-	standard §3	-	-	Verb: the last word of a name that performs it
+prune	verb	prune	-	-	stable	-	standard §3	-	-	Verb: the last word of a name that performs it
+list	verb	list	-	-	stable	-	standard §3	-	-	Verb: the last word of a name that performs it
+pull	verb	pull	-	-	stable	-	standard §3	-	-	Verb: the last word of a name that performs it
+push	verb,moment	push	-	-	stable	-	standard §3	-	-	Verb: the last word of a name that performs it; moment: at git push
+wait	verb	wait	-	-	stable	-	standard §3	-	-	Verb: the last word of a name that performs it
+select	verb	select	-	-	stable	-	standard §3	-	-	Verb: the last word of a name that performs it
+posix	subject	posix	lint	-	stable	-	standard §3	-	-	Lint subject family: the first segment of a lint rule id
+git	subject	git	lint	-	stable	-	standard §3	-	-	Lint subject family: the first segment of a lint rule id
+name	subject	name	lint	-	stable	-	standard §3	-	-	Lint subject family: the first segment of a lint rule id
+design	kind	design	-	-	stable	-	standard §4	-	-	Kind: docs/design/
+plan	kind	plan	-	-	stable	-	standard §4	-	-	Kind: docs/plans/
+context-map	kind	context map	-	-	stable	-	standard §4	-	-	Kind: docs/context-map.md
+generated-doc	kind	generated doc	-	-	stable	-	standard §4	-	-	Kind: docs/generated/ or build/
+script	kind	script	-	-	stable	-	standard §4	-	-	Kind: bin/<family>-<object>[-<verb>].<ext>
+module	kind,subject	module	-	-	stable	-	standard §4	-	-	Kind: src/<pkg>/<family>/<object>.py
+agent	family,kind	agent	control-plane	-	stable	-	standard §3 (D-17); standard §4	-	-	Family: delegated agents and their routing. Kind: agents/<name>.md
+workflow	kind	workflow	-	-	stable	-	standard §4	-	-	Kind: workflows, <family>-<verb>
+record	kind,layer	record	-	-	stable	-	standard §4; standard §5	-	-	Kind: host only, ~/.claude/harbor/records/
+secret	kind	secret	-	-	stable	-	standard §4	-	-	Kind: secret store, <system>-<service>-<identity>-<purpose>
+cloud-resource	kind	cloud resource	-	-	stable	-	standard §4	-	-	Kind: GCP, <system>-<family>-<object>[-<env>]
+source	layer	source	-	-	stable	-	standard §5	-	-	Layer: lives under tracked repo paths; never shown in a name
+generated	layer,lifecycle	generated	-	-	stable	-	standard §5	-	-	Layer: lives under docs/generated/ or build/; never shown in a name
+deployed	layer	deployed	-	-	stable	-	standard §5	-	-	Layer: lives under ~/.claude, ~/.local/bin, LaunchAgents; never shown in a name
+tracking	domain	tracking	domain	-	stable	-	standard §3 (D-35)	-	-	Domain of work, registered like a family (D-35)
+measurement	domain	measurement	domain	-	stable	-	standard §3 (D-35)	-	-	Domain of work, registered like a family (D-35)
+data	domain	data	domain	-	stable	-	standard §3 (D-35)	-	-	Domain of work, registered like a family (D-35)
+api	abbreviation	api	-	-	stable	-	standard §1.1 (D-18)	-	-	Registered abbreviation: application programming interface
+url	abbreviation	url	-	-	stable	-	standard §1.1 (D-18)	-	-	Registered abbreviation: uniform resource locator
+sql	abbreviation,extension	sql	-	-	stable	-	standard §1.1 (D-18); harbor#950 (standard §6.3)	-	-	Registered abbreviation: structured query language
+ssh	abbreviation	ssh	-	-	stable	-	standard §1.1 (D-18)	-	-	Registered abbreviation: secure shell
+roas	abbreviation	roas	-	-	stable	-	standard §12 (D-54)	-	-	Registered industry abbreviation: return on ad spend
+ctr	abbreviation	ctr	-	-	stable	-	standard §12 (D-54)	-	-	Registered industry abbreviation: click-through rate
+aov	abbreviation	aov	-	-	stable	-	standard §12 (D-54)	-	-	Registered industry abbreviation: average order value
+cpc	abbreviation	cpc	-	-	stable	-	standard §12 (D-54)	-	-	Registered industry abbreviation: cost per click
+cpm	abbreviation	cpm	-	-	stable	-	standard §12 (D-54)	-	-	Registered industry abbreviation: cost per mille
+meta	concept	Meta	-	-	stable	-	standard §12 (D-54)	-	-	Current vendor name, used in new names (D-54): Meta (the ad platform; was Facebook)
+id	abbreviation	id	-	-	experimental	-	harbor#950 (D-18 registered list extended)	-	-	Registered abbreviation: identifier
+env	abbreviation	env	-	-	experimental	-	harbor#950 (D-18 registered list extended)	-	-	Registered abbreviation: environment
+lib	abbreviation	lib	-	-	experimental	-	harbor#950 (D-18 registered list extended)	-	-	Registered abbreviation: library
+src	abbreviation	src	-	-	experimental	-	harbor#950 (D-18 registered list extended)	-	-	Registered abbreviation: source directory
+pr	abbreviation,moment	pr	-	-	experimental	-	harbor#950 (D-18 registered list extended)	-	-	Registered abbreviation: pull request
+ui	abbreviation	ui	-	-	experimental	-	harbor#950 (D-18 registered list extended)	-	-	Registered abbreviation: user interface
+dir	abbreviation	dir	-	-	experimental	-	harbor#950 (D-18 registered list extended)	-	-	Registered abbreviation: directory
+ref	abbreviation	ref	-	-	experimental	-	harbor#950 (D-18 registered list extended)	-	-	Registered abbreviation: git reference
+prod	abbreviation	prod	-	-	experimental	-	harbor#950 (D-18 registered list extended)	-	-	Registered abbreviation: production
+dev	abbreviation	dev	-	-	experimental	-	harbor#950 (D-18 registered list extended)	-	-	Registered abbreviation: development
+wt	abbreviation	wt	-	-	experimental	-	harbor#950 (D-18 registered list extended)	-	-	Registered abbreviation: worktree (directory suffix)
+json	abbreviation,extension	json	-	-	stable	-	harbor#950 (D-18 registered list extended); harbor#950 (standard §6.3)	-	-	Registered abbreviation: JSON
+jsonl	abbreviation,extension	jsonl	-	-	stable	-	harbor#950 (D-18 registered list extended); harbor#950 (standard §6.3)	-	-	Registered abbreviation: JSON Lines
+yaml	abbreviation,extension	yaml	-	-	stable	-	harbor#950 (D-18 registered list extended); harbor#950 (standard §6.3)	-	-	Registered abbreviation: YAML
+html	abbreviation,extension	html	-	-	stable	-	harbor#950 (D-18 registered list extended); harbor#950 (standard §6.3)	-	-	Registered abbreviation: HTML
+css	abbreviation,extension	css	-	-	stable	-	harbor#950 (D-18 registered list extended); harbor#950 (standard §6.3)	-	-	Registered abbreviation: CSS
+tsv	abbreviation,extension	tsv	-	-	stable	-	harbor#950 (D-18 registered list extended); harbor#950 (standard §6.3)	-	-	Registered abbreviation: tab-separated values
+mcp	abbreviation	mcp	-	-	experimental	-	harbor#950 (D-18 registered list extended)	-	-	Registered abbreviation: Model Context Protocol
+os	abbreviation	os	-	-	experimental	-	harbor#950 (D-18 registered list extended)	-	-	Registered abbreviation: operating system
+ts	abbreviation,extension	ts	-	-	stable	-	harbor#950 (D-18 registered list extended); harbor#950 (standard §6.3)	-	-	Registered abbreviation: timestamp field; TypeScript
+md	extension	md	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+sh	extension	sh	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+mjs	extension	mjs	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+cjs	extension	cjs	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+js	extension	js	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+jsx	extension	jsx	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+tsx	extension	tsx	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+d	extension	d	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+py	extension	py	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+csv	extension	csv	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+txt	extension	txt	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+log	extension	log	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+svg	extension	svg	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+png	extension	png	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+jpg	extension	jpg	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+gif	extension	gif	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+ico	extension	ico	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+pdf	extension	pdf	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+woff2	extension	woff2	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+hbs	extension	hbs	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+yml	extension	yml	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+toml	extension	toml	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+plist	extension	plist	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+patch	extension	patch	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+timer	extension	timer	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+service	extension	service	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+awk	extension	awk	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+jq	extension	jq	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+lock	extension	lock	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+example	extension	example	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+tmpl	extension	tmpl	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+config	extension	config	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+xml	extension	xml	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+sha256	extension	sha256	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+zsh	extension	zsh	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+bash	extension	bash	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
+family	concept,level	family	subsystem	-	experimental	-	standard D-57	module; area (workloads)	-	A module of the platform and level five of the hierarchy: the first word on a flat surface and the subpackage in code. It belongs to one subsystem and is not one (D-57, D-59)
+ops	domain	ops	domain	S1	experimental	-	standard D-69	-	-	Domain: operational tools, such as mail and calendar and the wiki mirror
+product	domain	product	domain	S1	experimental	-	standard D-69	-	-	Domain: products the operator ships, such as a pipeline product and the client portal
+event	family,moment	event	observability	-	experimental	-	harbor#1049 (operator decision 2026-10-05, D-77); moment: D-89	-	-	Family: the event bus and its dispatcher (emit, follow, rules). Moment: started by an event it receives (a bus line, a host notification, an incoming signal), not by a timer or a harness hook
+obligation	concept	obligation	status	S3*	experimental	-	harbor#1049 (D-77)	open loop (not used: in control theory it is a loop without feedback)	-	One unit of unfinished work the box tracks from the event that opens it to the event that closes it; the ledger of them is the status family's
+shadow	mode	shadow	-	-	stable	-	standard D-29, D-64	-	-	A control that records a finding and prints nothing (D-29)
+warn	mode	warn	-	-	stable	-	standard D-29, D-64	advisory; inform	-	A control that prints a finding and never fails the run (D-29, D-64)
+block	mode	block	-	-	stable	-	standard D-29, D-64	-	-	A control that fails the run on a finding (D-29)
+pass	outcome	pass	-	-	stable	-	standard D-29	-	-	The check held
+fail	outcome	fail	-	-	stable	-	standard D-29	-	-	The check did not hold
+skip	outcome	skip	-	-	stable	-	standard D-29	-	-	The check did not apply
+unchecked	outcome	unchecked	-	-	stable	-	standard D-29	-	-	The check could not run, so nothing was judged
+allow	decision	allow	-	-	stable	-	standard D-29	-	-	An admission decision that lets the call through
+ask	decision	ask	-	-	stable	-	standard D-29	-	-	An admission decision that asks the operator
+deny	decision	deny	-	-	stable	-	standard D-29	-	-	An admission decision that refuses the call
+critical	severity	critical	-	-	stable	-	standard D-29	-	p0	Severity: stop everything
+high	severity	high	-	-	stable	-	standard D-29	-	p1	Severity: fix this week
+medium	severity	medium	-	-	stable	-	standard D-29	-	p2	Severity: fix in the next batch
+low	severity	low	-	-	stable	-	standard D-29	-	p3	Severity: fix when touched
+p0	priority	p0	-	-	stable	-	harbor#1001	-	-	Issue priority: stop everything
+p1	priority	p1	-	-	stable	-	harbor#1001	-	-	Issue priority: fix this week
+p2	priority	p2	-	-	stable	-	harbor#1001	-	-	Issue priority: fix in the next batch
+p3	priority	p3	-	-	stable	-	harbor#1001	-	-	Issue priority: fix when touched
+current	state	current	-	-	stable	-	standard D-29	-	-	State: matches its source
+stale	state	stale	-	-	stable	-	standard D-29	-	-	State: older than its source
+missing	state	missing	-	-	stable	-	standard D-29	-	-	State: absent where it should be
+vale	control-type	vale	-	-	stable	-	standard D-62	-	-	A prose rule of the generated Vale config
+write	moment	write	-	-	stable	-	standard 09a S2	-	-	When a writer creates the thing
+commit	moment	commit	-	-	stable	-	standard 09a S2	-	-	At git commit
+merge	moment	merge	-	-	stable	-	standard 09a S2	-	-	At merge
+runtime	moment	runtime	-	-	stable	-	standard 09a S2	-	-	While the agent runs, at a tool call or a session event
+schedule	moment	schedule	-	-	stable	-	standard 09a S2	-	-	On a timer
+manual	moment	manual	-	-	experimental	-	harbor#950 (operator decision 2026-10-24, D-89)	on demand; terminal-run	-	A person or a session runs it on demand; nothing starts it on its own
+preventive	function	preventive	-	-	stable	-	standard 09a S2	-	-	Acts before the harm: refuses or steers
+detective	function	detective	-	-	stable	-	standard 09a S2	-	-	Finds the harm after the fact
+corrective	function	corrective	-	-	stable	-	standard 09a S2	-	-	Repairs the harm; renames are always proposals
+versioned	lifecycle	versioned	-	-	stable	-	standard 09a S5	-	-	Ids are permanent and a deprecated one names its successor (D-19)
+dated	lifecycle	dated	-	-	stable	-	standard 09a S5	-	-	Written once under a date, then never edited
+living	lifecycle	living	-	-	stable	-	standard 09a S5	-	-	Edited in place; git is the history
+append-only	lifecycle	append-only	-	-	stable	-	standard 09a S5	-	-	Only grows; closed generations move to an archive
+share	concept	share	-	-	experimental	-	standard D-83	-	-	The axis of who an artefact is shared with; its values are the terms of class share
+core	share	core	-	-	stable	-	standard D-83	-	-	Shared with everyone who installs Harbor
+hub	share	hub	-	-	experimental	-	standard D-83 (amended, harbor#1149)	-	-	Shared with the members of one company layer
+personal	share	personal	-	-	stable	-	standard D-83 (amended, harbor#1149)	-	-	Shared with the owner only
+pack	family	pack	catalog	S1	stable	-	standard D-84	-	-	Family: a workload repo's harbor-pack/ folder, installed box-wide
+registered-in	relation	registered in	-	-	experimental	-	research/15 §3 (CLAUDE.md: every check is registered)	-	-	The edge from a check to the register that lists it; a check with no registered-in edge is a finding
+notifies	relation	notifies	-	-	experimental	-	research/15 §3 (CLAUDE.md: a check names where it notifies)	-	-	The edge from a check to the channel that receives its red
+disabled-by	relation	disabled by	-	-	experimental	-	research/15 §3 (CLAUDE.md: a check names how to disable it)	-	-	The edge from a check to the exact command that turns it off
+findings-land-in	relation	findings land in	-	-	experimental	-	research/15 §3 (CLAUDE.md: a finding has a destination)	-	-	The edge from a check to where its findings are read: a person, a ticket or a repair
+enforced-by	relation	enforced by	-	-	experimental	-	research/15 §3-4 (CLAUDE.md: a rule with no mechanism is a wish)	-	-	The edge from a clause to the control that enforces it, or to the judgment that declares it unenforced
+enforces	relation	enforces	-	-	experimental	-	research/15 §4 (trace up)	-	-	The edge from a control to the clause it enforces; a control with no clause is policy no one approved
+red-proof	relation	red proof	-	-	experimental	-	research/15 §3 (CLAUDE.md: a test that cannot fail is worse than none)	-	-	The edge from a control to the evidence that it went red once
+listed-in	relation	listed in	-	-	experimental	-	research/15 §3 (CLAUDE.md: the exemption is a list)	-	-	The edge from an auto-remediation to the allowlist that names it
+derived-by	relation	derived by	-	-	experimental	-	research/15 §3 (CLAUDE.md: a magnitude carries its command)	-	-	The edge from a magnitude to the command that re-derives it
+motivated-by	relation	motivated by	-	-	experimental	-	research/15 §4 (trace down; why is derived)	-	-	The edge from a clause or control to the issues that motivated it, derived from Refs trailers and issue links
+implements	relation	implements	-	-	experimental	-	research/15 §2 (OSCAL component definition: what implements a control)	-	-	The edge from a file to the control it carries out: the control's engine, or the code that stamps or writes the receipt of its check id
+owned-by	relation	owned by	-	-	experimental	-	research/15 §3 (09a S2: every control has an owner)	-	-	The edge from a control to the family that answers for it
+duty	modality	duty	-	-	experimental	-	W3C ODRL (research/15 §2-3)	-	-	A clause that obliges: the subject must do the thing
+prohibition	modality	prohibition	-	-	experimental	-	W3C ODRL (research/15 §2-3)	-	-	A clause that forbids: the subject must not do the thing
+permission	modality	permission	-	-	experimental	-	W3C ODRL (research/15 §2-3)	-	-	A clause that allows: the subject may do the thing, and nothing is implied beyond it
+constitutional	tier,strength	constitutional	-	-	experimental	-	research/15 §3 (CLAUDE.md: the five, №1-№5)	-	-	The highest tier: the five constitutional rules and the meta-rules; changes by a person's PR with a named reviewer
+tutorial	kind	tutorial	-	-	stable	-	harbor#949 composition review (2026-10-04); Diataxis (Procida); D-90	-	-	A learning-oriented doc that takes a reader through one lesson to a working result
+how-to	kind	how-to guide	-	-	stable	-	harbor#949 composition review (2026-10-04); Diataxis (Procida); D-90	-	-	A task-oriented doc that gives the steps to reach one goal the reader already has
+reference	kind	reference	-	-	stable	-	harbor#949 composition review (2026-10-04); Diataxis (Procida); D-90	-	-	An information-oriented doc that describes the machinery; generated from the registers where it can be
+explanation	kind	explanation	-	-	stable	-	harbor#949 composition review (2026-10-04); Diataxis (Procida); D-90	-	-	An understanding-oriented doc that holds the why: doctrine lives here
+feat	commit-type	feat	-	-	stable	-	Conventional Commits 1.0; standards/naming.md D-21	-	-	A commit or PR that adds behaviour a user can see
+fix	commit-type	fix	-	-	stable	-	Conventional Commits 1.0; standards/naming.md D-21	-	-	A commit or PR that repairs behaviour that was wrong
+docs	commit-type	docs	-	-	stable	-	Conventional Commits 1.0; standards/naming.md D-21	-	-	A commit or PR that changes documentation only
+style	commit-type	style	-	-	stable	-	Conventional Commits 1.0; standards/naming.md D-21	-	-	A commit or PR that changes formatting and no meaning
+refactor	commit-type	refactor	-	-	stable	-	Conventional Commits 1.0; standards/naming.md D-21	-	-	A commit or PR that restructures code and keeps its behaviour
+build	commit-type	build	-	-	stable	-	Conventional Commits 1.0; standards/naming.md D-21	-	-	A commit or PR that changes how the repo is built or packaged
+chore	commit-type	chore	-	-	stable	-	Conventional Commits 1.0; standards/naming.md D-21	-	-	A commit or PR that maintains the repo and changes no behaviour
+revert	commit-type	revert	-	-	stable	-	Conventional Commits 1.0; standards/naming.md D-21	-	-	A commit or PR that undoes an earlier one
+perf	commit-type	perf	-	-	stable	-	Conventional Commits 1.0; standards/naming.md D-21; 12 perf commits on main	-	-	A commit or PR that improves performance and changes no behaviour
+local	strength	local	-	-	experimental	-	harbor#1026, harbor#1027 (strength set)	-	-	The strength of a governed repo's own rules: it wins over a plain rule on workflow, conventions and tooling, and over nothing else
+judgment	moment	judgment	-	-	experimental	-	harbor#1028 (moment set; research/15 section 4)	-	-	No mechanism: a clause that only a reader can apply, counted in the matrix and never hidden

@@ -1,0 +1,79 @@
+# kinds.tsv (harbor#950) — every kind of artifact, where it lives and what it must carry.
+#
+# WHY THIS FILE EXISTS. A kind was a table in prose (standards/naming.md §4), so the lint could not say
+# "this file is kind X, so it needs fields Y in folder Z" and each rule hardcoded its own slice (09a S1).
+# One row per kind term (terms.tsv, class kind) states the folder, the path pattern, the surface that
+# names it, the metadata it carries, the layer and level it sits at and how it ages. Every kind term has
+# exactly one row. Whether a given path carries its required_fields is standard.kind-fields (bin/standard-shape.sh); today the lint also refuses a row that
+# names a layer, level, lifecycle or surface the registry does not have.
+#
+# The kind and layer of each top-level repo entry are mapped in contracts/layout-map.tsv (harbor#1272), checked by bin/lint-layout-map.sh.
+#
+# standard_version: 2.0.0
+#
+# THE TWO SHAPES THIS FILE'S required_fields NAME FOR A DOC (harbor#1434, #1435; judged by bin/doc-shape.sh).
+#   Front matter: every docs/**/*.md opens with `---` and carries `kind` (this file's id for the folder the doc sits in,
+#   or a row of contracts/doc-folders.tsv for a folder this file does not name), `owner` (a ticket `repo#n` or `KEY-n`, or a
+#   person `@login`), `status` (a decision record: proposed accepted rejected superseded; any other doc: current draft
+#   unreviewed superseded archived generated) and, where required_fields says so, `source` (the command or file the doc derives from).
+#   Generated header: a generated file carries one comment line `generated-by: <command>` in its own comment syntax (`#` before
+#   the text, `//` before it, or `<!-- ... -->` around it), after any front matter and within the first 20 lines, and <command> equals the `fix` column of its
+#   contracts/fresh-checks.tsv row, the two held equal both ways. `generated-by` in required_fields means that header.
+#
+# COLUMNS  id <TAB> folder <TAB> path_pattern <TAB> surface <TAB> required_fields <TAB> layer <TAB> level
+#          <TAB> lifecycle <TAB> generator <TAB> share <TAB> required_relations <TAB> note
+#   id               a terms.tsv term of class kind
+#   folder           the root folder of the kind, or - when it is not a repo folder
+#   path_pattern     where one artifact lives; <placeholders> are the grammar's slots
+#   surface          the surfaces.tsv id that renders the artifact's name
+#   required_fields  space-separated tokens the artifact carries, or -: front_matter, a front matter key (a.b is a key a with an indented b),
+#                    schema_version, generated-by, and for a .tsv id-first, why-header and standard_version. Judged by
+#                    bin/standard-shape.sh (standard.kind-fields, harbor#1424) on the files of the catalog's instances
+#   layer            source | generated | deployed | record | report (terms.tsv, class layer)
+#   level            the containment level the artifact sits at (terms.tsv, class level; D-57)
+#   lifecycle        versioned | dated | living | generated | append-only (terms.tsv, class lifecycle)
+#   generator        the command that regenerates a generated kind, or -
+#   required_relations  space-separated shapes <relation>[:<min>..<max>], or -: a relation term (terms.tsv, class relation)
+#                    an instance must carry, and how many distinct targets it may have; max * is unbounded, a bare name
+#                    is 1..*. Checked: each name is a relation term and each bound is well formed (bin/lint-name.sh).
+#                    Judged by bin/standard-shape.sh over build/graph.tsv, on the catalog's instances of the kind
+#                    (harbor#996 G2); the counts are research/15 §3's.
+#   share            the SET of shares a kind may take, comma-separated: core | hub | workload | personal (terms.tsv, class share).
+#                    An instance's share comes from where it lives: harbor checkout core, workload repo (and its
+#                    harbor-pack/) workload, harbor-private personal (its hub/ part hub); bin/lint-share.sh judges it (D-83, harbor#1274)
+#   note             the decision or section that places it
+id	folder	path_pattern	surface	required_fields	layer	level	lifecycle	generator	share	required_relations	note
+memory-store	memory-store/	memory-store/<scope>/<subject>-<claim>.md	path	name description metadata.type	source	system	living	-	personal	-	D-8: the folder and the repo are both memory-store; D-24: claim-style note names
+policy	policy/	policy/constitution.md; policy/rationale/<topic>.md	path	front_matter	source	system	living	-	core	enforced-by:1..*	§4
+standard	standards/	standards/<topic>.md; standards/naming/<register>.tsv	path	front_matter	source	system	versioned	-	core	-	§4: the registry carries standard_version (D-28)
+contract	contracts/	contracts/<interface>.md	path	schema_version	source	system	versioned	-	core	-	§4: one interface per file, with fixtures
+decision-record	docs/decisions/	docs/decisions/<NNNN>-<slug>.md	path	kind owner status	source	element	dated	-	core	-	§4: MADR status proposed, accepted, rejected or superseded
+injection-rule	context-rules/<scope>/	context-rules/<scope>/<id>.md	path	event when	source	component	living	-	core,workload	-	D-43: order only where it matters
+hook	hooks/	hooks/<engine>/<engine>.sh; hooks/<event> (git); bin/<family>-<object>.<ext> (floor)	bin	-	source	component	living	-	core	-	§4: named for the event; D-88: a non-floor engine is a folder with its manifest and tests
+skill	skills/	skills/<family-or-domain>-<object>/SKILL.md	skill	name description	source	component	living	-	core,workload	-	D-35
+finding	-	a GitHub issue keyed <tier>/<id>	label	key fingerprint	report	element	living	-	core	-	§4; labels are <axis>:<value> (D-30)
+lint-rule	standards/naming/	standards/naming/controls.tsv row	rule-id	id mode title	source	element	versioned	-	core	red-proof:1..*	D-62: a control of type lint
+fixture	fixtures/	fixtures/<family>/<subject>/	fixture	-	source	element	living	-	core,workload	-	§4
+eval	evals/	evals/<family>/<experiment>/	path	-	source	component	dated	-	core,personal	-	D-56: one experiment per folder
+check	registries/	a controls.tsv row of type check; docs/reference/checks.md until a generator reads it	check-id	id watches schedule notifies red_means	source	element	versioned	-	core,hub,workload,personal	registered-in:1..1 notifies:1..* disabled-by:1..* findings-land-in:1..*	D-20, D-62
+template	templates/	templates/<target-name>.tmpl	path	-	source	component	living	-	core	-	§4: the layer never goes into a name; .tmpl sits beside its render
+registry	registries/	<folder>/<name>.tsv	registry	id-first why-header standard_version	source	component	versioned	-	core,hub,personal	-	§4, D-9
+runbook	docs/runbooks/	docs/runbooks/<slug>.md	path	kind owner status	source	component	living	-	core	-	§4
+handover	docs/handover.md	docs/handover.md	path	kind owner status	source	system	living	-	core	-	D-7: one per repo
+test	tests/	tests/<family>/<subject>/<aspect>.test.<ext>; hooks/<engine>/<engine>.test.sh	test	-	source	component	living	-	core,workload	-	D-14: Python keeps test_<aspect>.py; D-88: an engine's tests sit in its folder
+report	docs/reports/	docs/reports/<YYYY-MM-DD>-<slug>.md	path	kind owner status	report	element	dated	-	core	-	§4
+design	docs/design/	docs/design/<slug>.md	path	kind owner status	source	component	living	-	core	-	§4
+plan	docs/plans/	docs/plans/<slug>.md	path	kind owner status	source	component	living	-	core	-	§4
+context-map	docs/context-map.md	docs/context-map.md	path	kind owner status source generated-by	generated	system	generated	-	core	-	§4: one per repo; 09a: generated from the catalog
+generated-doc	docs/generated/	docs/generated/<name>; build/<name>	path	kind owner status source generated-by	generated	component	generated	-	core	-	D-40: tracked only where the generator cannot run
+script	bin/	bin/<family>-<object>[-<verb>].<ext>	bin	-	source	component	living	-	core,workload	-	D-11, D-41: kebab in every language when executed
+module	src/	src/<pkg>/<family>/<object>.py	python-module	-	source	component	living	-	core	-	D-32: nested by family
+agent	agents/	agents/<family>-<role>.md	agent	name description	source	component	living	-	core,workload	-	D-35
+workflow	workflows/	workflows/<family>-<verb>	workflow	-	source	component	living	-	core	-	D-35
+record	-	~/.claude/harbor/records/<host>/<family>/<YYYY-MM-DD>.jsonl	record	ts id	record	element	append-only	-	personal	-	D-34: host only, partitioned, UTC
+secret	-	a secret-store entry <system>-<service>-<identity>-<purpose>	secret	-	deployed	element	living	-	personal	-	D-36: never a value, client data or email
+cloud-resource	-	a GCP resource <system>-<family>-<object>[-<env>]	cloud-resource	-	deployed	component	living	-	workload	-	D-33: a warehouse keeps one registered dialect per repo
+tutorial	docs/tutorials/	docs/tutorials/<slug>.md	path	kind owner status	source	component	living	-	core	-	harbor#950 PR 2 (2026-10-04): Diataxis kind, registry row only; the docs/<kind>/ moves are #961 W1
+how-to	docs/how-to/	docs/how-to/<slug>.md	path	kind owner status	source	component	living	-	core	-	harbor#950 PR 2 (2026-10-04): Diataxis kind, registry row only; the docs/<kind>/ moves are #961 W1
+reference	docs/reference/	docs/reference/<slug>.md	path	kind owner status	generated	component	generated	-	core	-	harbor#950 PR 2 (2026-10-04): Diataxis kind generated from the registers; no generator is built yet, so generator is -
+explanation	docs/explanation/	docs/explanation/<slug>.md	path	kind owner status	source	component	living	-	core	-	harbor#950 PR 2 (2026-10-04): Diataxis kind; doctrine lives here (#949 composition review)
