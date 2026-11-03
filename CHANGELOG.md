@@ -10,6 +10,18 @@ version's only source. `tests/test_version.py` fails when they disagree.
 
 ## [Unreleased]
 
+### Added
+
+- **The audit holds a project's justfile to the task verbs its repo-kind requires** (category
+  `verbs`, control `check.repo-verbs`, standard#1428). The project declares `repo-kind:` in
+  `.agents/config.yaml`; its vendored `lint-name.sh --check repo-kind` reports each missing verb
+  of the standard's `verbs.tsv` as `name.repo-verb`, and a `naming-exemptions.tsv` row silences
+  one. A project that declares no kind is not judged. This repo declares `fleet-controller` and
+  gains the `naming` recipe it lacked.
+- **A decision series, `docs/decisions/`, starting at D-1** (standard#1429), rendered from the
+  scaffolder's record template. Records are cited `D-<n>` here and `fleet/D-<n>` from any other
+  repo; the ADRs under `.agents/docs/adr/` predate it and keep their numbers.
+
 ### Changed
 
 - **`watch` emits alerts and never pushes them: `--webhook` and `PO_WATCH_WEBHOOK` are

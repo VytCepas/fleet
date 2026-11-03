@@ -5,7 +5,7 @@
 # says what it means and what its exit code promises, so the same word means the same thing everywhere; the
 # `kinds` cell says which repo-kinds.tsv kinds must have it. `bin/lint-name.sh --check repo-kind <dir>` reads the
 # recipe names of <dir>/justfile and reports a required verb it lacks as name.repo-verb; the fleet audit calls it.
-# yard renders the verb set of a scaffolded repo's justfile from this file (tools/gen_justfile.py there).
+# yard renders the verb set of a scaffolded repo's justfile from this file (tools/generate_justfile.py there; a stack's own recipes stay in tools/justfile-recipes/, and a required verb a stack lacks renders as a stub that exits non-zero).
 # An exemption is a row in the repo's own naming-exemptions.tsv: rule name.repo-verb, subject repo-verb:<id>.
 #
 # standard_version: 2.0.0

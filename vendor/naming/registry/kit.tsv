@@ -78,6 +78,7 @@ register.contracts-skill-book-router-tsv	register	contracts/skill-book-router.ts
 register.contracts-streams-tsv	register	contracts/streams.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
 register.contracts-agent-tools-tsv	register	contracts/agent-tools.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
 register.contracts-bin-tsv	register	contracts/bin.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-family-entries-tsv	register	contracts/family-entries.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
 register.contracts-confinement-classes-tsv	register	contracts/confinement-classes.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
 register.contracts-confinement-mcp-tsv	register	contracts/confinement-mcp.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
 register.contracts-env-tsv	register	contracts/env.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload

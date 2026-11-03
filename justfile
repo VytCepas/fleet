@@ -34,6 +34,12 @@ lint:
 docs-check:
     sh gates/doc-check.sh --strict
 
+# the naming standard over this repo, with naming-exemptions.tsv applied (gates/naming-check.sh). The judge is the standard's
+# checkout, named by NAMING_STANDARD_REPO; without one the gate says UNCHECKED and exits 3, never a pass (verbs.tsv, standard#1428).
+[doc("naming standard check (gates/naming-check.sh); exit 3 is unchecked, never a pass")]
+naming:
+    sh gates/naming-check.sh
+
 # static type check (strict mode per mypy.ini; add mypy with `uv add --dev mypy`)
 # no-op on a fresh scaffold with no src/ yet — mypy errors on a missing path.
 # --install-types fetches missing dependency stubs (types-PyYAML etc.) so
