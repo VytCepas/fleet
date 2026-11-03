@@ -52,6 +52,10 @@ _SELF = Path(__file__).resolve().relative_to(_REPO_ROOT)
 
 _SKIP_SUFFIXES = {".pyc", ".png", ".svg", ".ico", ".lock"}
 
+# A verbatim copy of the naming standard's package: the MANIFEST row hashes of every file in it are
+# held by `just docs-check`, so rewording a line is an edit the gate refuses. Nothing else may name it.
+_VENDORED_PREFIX = "vendor/naming/"
+
 
 def _shipped() -> set[str]:
     """Every path `pyproject.toml` puts in the wheel, relative to the repo root."""
@@ -94,6 +98,10 @@ def _is_exempt(path: Path) -> bool:
     return any(path.is_relative_to(_REPO_ROOT / root) for root in _SCAN_EXEMPT)
 
 
+def _is_vendored(path: Path) -> bool:
+    return any(path.is_relative_to(base / _VENDORED_PREFIX) for base in {_REPO_ROOT, _top()})
+
+
 def _scanned_files() -> list[Path]:
     selves = {_REPO_ROOT / _SELF, _top() / _SELF}
     candidates = set(_tracked())
@@ -107,6 +115,7 @@ def _scanned_files() -> list[Path]:
         and "__pycache__" not in p.parts
         and p not in selves
         and not _is_exempt(p)
+        and not _is_vendored(p)
     )
 
 

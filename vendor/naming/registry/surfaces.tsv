@@ -1,0 +1,71 @@
+# surfaces.tsv (harbor#950) — every surface a name is rendered on, and how (standards/naming.md §6.1).
+#
+# WHY THIS FILE EXISTS. One tuple of terms gives every surface its name, so the renderer per
+# surface is the grammar's other half. Before this file it was a table in prose that the lint
+# could not read; the naming guide is now generated from these rows (`--gen naming-guide`), and
+# every example below runs as a pass fixture in `bin/lint-name.sh --self-test`, so an example the
+# lint rejects fails the build.
+#
+# standard_version: 2.0.0
+#
+# COLUMNS  id <TAB> renderer <TAB> family <TAB> checked <TAB> example <TAB> rule <TAB> view <TAB> note
+#   id        the surface id that `bin/lint-name.sh --check <surface> <name>` takes
+#   renderer  a GRAMMAR when `rule` is set, prose otherwise. The lint parses a name back through it
+#             and renders a tuple with it (`--parse`, `--render`), so editing the cell changes the
+#             verdict. <slot> is one word group, [..] is optional, anything else is literal, and a
+#             slot spelled in capitals renders in capitals. Slots: <family> <verb> <system> (or
+#             <REPO>) are registered terms; <family-or-domain> is a family or a domain; <object>
+#             <subject> <aspect> <name> <id> <ext> are free. The joiner inside a slot is _ when the
+#             grammar has an _ and - otherwise.
+#   family    required | optional | -   whether the first word must be a family (or a domain)
+#   checked   tree     lint-name.sh scans the repo tree for it, and --check accepts it
+#             check    --check accepts it; nothing in a repo tree carries it
+#             no       not machine-checked here: another tool, or review only (the note says which)
+#   example   a name that MUST pass; - when the surface is not checked, or when the thing checked is
+#             a directory on disk and its examples are the fixtures (repo-kind). Every example whose
+#             `rule` is set must also survive parse then render unchanged (--self-test)
+#   rule      the rules id that reports a name the grammar does not parse or whose slot is not
+#             the registered term it needs; - when the renderer is prose, not a grammar
+#   view      - when the surface is judged by its own code. Otherwise <surface>[:<rule>,<rule>]: this
+#             id is another surface under a second name (`path.test` is `test`), or that surface
+#             judged for the listed rules only (`case` is `path` reporting name.case alone). The
+#             target is a row of this file and each rule a row of controls.tsv; a view is never of a view
+id	renderer	family	checked	example	rule	view	note
+repo	kebab	-	no	memory-store	-	-	the GitHub owner's namespace; D-45 workload repos are <domain>-<name>
+path	kebab, lowercase, the extension chain registered	-	tree	docs/reports/2026-10-03-review.md	-	-	every tracked path segment (D-1, §6.2, §6.3)
+directory	kebab, plural when it holds many	-	tree	tests/admission/bash	-	-	a directory is a path segment
+case	lowercase, except a name exemptions.tsv lists as tool-required	-	check	docs/reports/2026-10-03-review.md	-	path:name.case	the case rule alone, on a path (D-1): harbor#961 asks that no uppercase file name stays outside the allow-list
+bin	<family>[-<object>][-<verb>].<ext>	required	tree	admission-bash.sh	name.family	-	flat and deployed (D-11); a PATH command has no extension and needs no family
+command	<system> <family> [<object>] [<verb>]	required	no	harbor drift install	-	-	generated as the CLI tree (`--gen cli-tree`, D-13)
+skill	<family-or-domain>[-<object>]	required	tree	tracking-standards	name.skill-dir	-	skills/<name>/ and vendor/skills/<name>/ (D-35)
+agent	<family>-<role>	required	no	audit-reviewer	-	-	agents/<name>.md (D-35); owner #1010 PR 3 (name.agent-dir beside name.skill-dir)
+workflow	<family>-<verb>	required	no	audit-review	-	-	D-35; owner #1010 PR 3 (name.workflow-file beside name.skill-dir)
+rule-id	.-separated kebab segments, a family or lint subject first	required	tree	name.skill-dir	-	-	ids in standards/naming/controls.tsv (D-10)
+check-id	.-separated kebab segments	required	check	drift.undeployed	-	-	check and lint ids (D-10)
+reference	[system/]register:id	-	no	fleet/lint:drift.orphan-repo	-	-	D-20; owner #996 lane E (doc-refs.sh reads the register:id form with the <system>:path extractor)
+launchd	com.<system>.<family>.<object>.plist	required	tree	com.harbor.audit.triage.plist	name.launchd	-	launchd/*.plist; the codename is allowed here only
+systemd	harbor-<id>.timer	-	tree	harbor-audit-triage.timer	-	-	checked as a path
+env	<REPO>_<FAMILY>_<NAME>	required	tree	HARBOR_ADMISSION_DISABLE	name.env	-	tokens in tracked code that start with a repo prefix or an alias (D-15)
+sh-name	snake, the full family word as prefix	-	no	admission_block	-	-	shellcheck and review; no unregistered abbreviation (D-18); prose by decision, no checker: a checker needs a shell parser and its cost is above the defect rate (D-56); owner none, #996 item 10
+python-module	snake, nested by family	-	no	fleet/drift/undeployed.py	-	-	ruff N rules (D-32, D-41)
+ts-file	kebab, kind in the extension chain	-	tree	browser-probe.test.ts	-	-	checked as a path
+record	JSONL, ts in UTC, snake fields	-	no	{"ts":"2026-10-04T09:12:03Z"}	-	-	LOG1 and F5 (D-34)
+branch	<type>/<issue>-<slug>	-	check	fix/949-admission-missing-hook	-	-	D-21; a PR's head branch, read by --check only: the grammar is a regex in bin/lint-name.sh because the type is a commit-type term, which no slot spells (harbor#978)
+commit	<type>(<family>): <subject> + Refs: <repo>#<n>	-	check	fix(admission): stop exit-127	-	-	lint C2 and the commit hook (D-21); the subject, which is also a PR title, is read by --check only; the Refs trailer is the commit hook's (harbor#978)
+worktree	$PORT_ROOT/.worktrees/<repo>/<slug> (legacy sibling <repo>-wt-<name>)	-	no	.worktrees/harbor/949	-	-	bin/worktree.sh; owner #1259 (a name.worktree control from the per-surface allowlist validators)
+label	<axis>:<value>	-	no	family:admission	-	-	generated as the label set (`--gen labels`, D-30)
+issue-title	<family>: <outcome>	required	no	admission: stop exit-127	-	-	D-30
+stamp	[<register>:<id>]	-	no	[check:audit.triage]	-	-	D-20
+mcp-tool	mcp__<object>__<name>	-	check	mcp__harbor_chrome__tab_new	name.mcp-tool	-	an MCP tool as Claude Code names it, mcp__<server>__<tool>: both snake, since the harness joins them with __ (harbor#1301)
+release-tag	v<major>.<minor>.<patch>, SemVer 2.0	-	check	v1.2.3	-	-	a release tag, and the title of its release; read by --check only, never by a tree scan. The grammar is a regex in bin/lint-name.sh because a version is digits and dots, which no slot spells (harbor#957)
+field	snake_case; _at _date _s _ms _bytes _id suffixes; is_ and has_ booleans	-	check	created_at	-	-	a JSON key, a registry column or a config key; read by --check, and the header row of every register is scanned by the tree run. The retired spellings (_ts _time _seconds _kb _size _uid _flag) are listed in bin/lint-name.sh (harbor#1001); owner #996 G2 (standard-shape.sh reads a field as a shape of a kind)
+option	--long-kebab, one flag per meaning (D-56)	-	no	--dir	-	-	no checker yet; owner #1259 (an option surface and a flag census over bin/*.sh --help; lint D7 stays as is) (#996 item 10)
+schema-file	<name>.schema.json	-	no	event.schema.json	-	-	no checker yet; owner #996 G2 (a schema kind row; vendored files stay exempt by the vendor/ rule) (#996 item 10)
+secret	<system>-<service>-<identity>-<purpose>	-	no	harbor-github-vytcepas-pr-read	-	-	never a value, client data or email (D-36)
+cloud-resource	<system>-<family>-<object>[-<env>]	-	no	frobapp-api-prod	-	-	a warehouse keeps one dialect per repo, dialects.tsv (D-33)
+test	tests/<family>/<subject>/<aspect>.test.<ext>	required	tree	tests/admission/bash/destroy.test.sh	name.test-path	-	Python keeps test_<aspect>.py (D-14)
+path.test	the test surface under the name harbor#961 gives it	-	check	tests/admission/bash/destroy.test.sh	-	test	judged exactly as test is; test is the registry id, path.test its second name
+fixture	fixtures/<family>/<subject>/	-	tree	fixtures/naming/path/pass/expect.tsv	-	-	checked as a path
+registry	TSV: # WHY header, standard_version, id column first	-	tree	standards/naming	-	-	the registry is a lint subject like any other (§10.4); a repo's own words and families are the overlay surface, never a core row (§14, harbor#967)
+repo-kind	the entries repo-kinds.tsv requires of the kind .agents/config.yaml declares	-	check	-	-	-	a directory on disk, not a name: only `--check repo-kind <dir>` reads it, never a tree scan, because harbor's own layout moves in harbor#956 (§8); the githooks/ layout is required here, owner #967 (repo-kinds.tsv)
+overlay	naming-words.tsv and naming-families.tsv at a repo's root, in words.tsv's and terms.tsv's row shape	-	check	-	-	-	a directory on disk: `--check overlay <dir>` judges its overlay, and every run reads the judged root's; a root holding standards/naming/ has none (§14, harbor#967)

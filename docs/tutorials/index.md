@@ -1,3 +1,9 @@
+---
+kind: tutorial
+owner: @VytCepas
+status: unreviewed
+---
+
 # Tutorials
 
 Learning-oriented, step-by-step lessons. A tutorial takes a newcomer from

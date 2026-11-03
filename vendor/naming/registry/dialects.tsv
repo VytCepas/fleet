@@ -1,0 +1,17 @@
+# dialects.tsv (harbor#950) — the naming dialects a repo may register for objects the standard does not name (D-33, D-53).
+#
+# WHY THIS FILE EXISTS. Warehouse tables and external platform objects (tag-manager tags, analytics
+# events, task-tracker tasks, MCP connectors) already follow conventions that predate the standard or belong to
+# the platform, and renaming a production object is a migration, not a lint fix. So the managing
+# repo registers one dialect per platform with its own checker, new objects are bound to it,
+# existing ones are renamed only when touched (§11 step 8), and the shared words still come from
+# terms.tsv. Legacy vendor tokens are valid inside a dialect until touched (D-54).
+# Not checked by bin/lint-name.sh: no object here is a name in a repo tree it reads.
+#
+# standard_version: 2.0.0
+#
+# COLUMNS  id <TAB> owner <TAB> platform <TAB> checker <TAB> example <TAB> note
+#   owner    the repo that manages the objects and runs the checker (after D-45's renames)
+#   checker  the command that judges the dialect, or - when none exists yet
+id	owner	platform	checker	example	note
+mcp	harbor	MCP connectors	-	-	connector and tool names are the server's (D-53)

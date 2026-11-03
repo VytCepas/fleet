@@ -1,3 +1,9 @@
+---
+kind: explanation
+owner: @VytCepas
+status: unreviewed
+---
+
 # Interfaces: one view-model, four surfaces
 
 The orchestrator presents the fleet through four surfaces — the CLI status

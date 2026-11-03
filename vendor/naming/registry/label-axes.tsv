@@ -1,0 +1,63 @@
+# label-axes.tsv (harbor#978) — every issue label as <axis>:<value>, and the legacy label each one replaces.
+# WHY THIS FILE EXISTS. contracts/issue-taxonomy.tsv is the connector's only list of labels (harbor#512), but the
+# standard says every label is `<axis>:<value>` (D-30) and the family axis already lives in terms.tsv: two lists
+# would drift. This file holds the axes, their cardinality and the mapping from each bare or `theme:` label, and
+# `sh bin/lint-name.sh --gen issue-taxonomy` renders the connector's format and a legacy-to-new map from it into
+# untracked build/naming/. Nothing is renamed on GitHub by this file: creating, renaming or deleting a label is an
+# operator write (harbor#978), and the connector keeps reading contracts/issue-taxonomy.tsv until that sitting.
+#
+# standard_version: 2.0.0
+#
+# COLUMNS  id <TAB> axis <TAB> value <TAB> legacy <TAB> globs <TAB> min <TAB> max <TAB> status <TAB> meaning
+#   id      the label as it will be on GitHub; an axis row's id is the axis name
+#   value   the value after the colon; `-` on an axis row, which carries min and max (cardinality per issue)
+#   legacy  the label today, `-` for an axis row; a family row maps the `theme:` label of the same name
+#   globs   tracked-path patterns that suggest the label, or `-`
+#   status  ok, or gap: a theme with no family of its name, kept as a `theme:` label until a person registers
+#           the family or maps it (operator sitting B, harbor#949)
+id	axis	value	legacy	globs	min	max	status	meaning
+type	type	-	-	-	1	1	ok	the filer: underivable from content, so never guessed
+family	family	-	-	-	1	99	ok	the connector suggests from globs; the filer confirms
+epic	epic	-	-	-	0	1	ok	the filer: what kind of parent this is; membership is the native sub-issue edge
+priority	priority	-	-	-	0	1	ok	the filer: p0 only, capped at three open
+blocked	blocked	-	-	-	0	1	ok	triage: absent means not blocked
+finding	finding	-	-	-	0	1	ok	the findings reconciler (bin/lint-findings.sh)
+system	system	-	-	-	0	99	ok	the filer: campaign reporting across trees
+type:bug	type	bug	bug	-	-	-	ok	measurably wrong behaviour, now
+type:feature	type	feature	feature	-	-	-	ok	new capability
+type:tech-debt	type	tech-debt	tech-debt	-	-	-	ok	right today, and a person remembering is what keeps it right
+type:documentation	type	documentation	documentation	-	-	-	ok	a record contradicts the system it describes
+type:spike	type	spike	spike	-	-	-	ok	the deliverable is a verdict or an ADR, not code
+type:chore	type	chore	chore	-	-	-	ok	routine maintenance
+epic:workstream	epic	workstream	epic:workstream	-	-	-	ok	a capability being built; closes when its children do
+epic:provenance	epic	provenance	epic:provenance	-	-	-	ok	origin record of an audit or research pass; closes when its children are triaged
+epic:framing	epic	framing	epic:framing	-	-	-	ok	a problem statement awaiting a design decision
+theme:floor	theme	floor	theme:floor	bin/admission-*.sh bin/library-admission.sh bin/deploy-restore.sh bin/lint-conventions.sh docs/explanation/admission-baseline.md	-	-	gap	guard and floor correctness — what the gates see and refuse
+family:memory	family	memory	theme:memory	bin/memory*.sh hooks/memory-harvest/* hooks/worklog-push/* worklog/* contracts/memory-format.md	-	-	ok	capture, recall, index, staleness
+family:context	family	context	theme:context	bin/context-budget.sh bin/memory-store-check.sh context-rules/* registries/context-baseline.tsv policy/constitution.md	-	-	ok	always-on surface and per-call context economy
+theme:doc-truth	theme	doc-truth	theme:doc-truth	docs/explanation/doc-truth.md contracts/README.md docs/reports/qa-plan.md docs/reports/evals.md docs/generated/status.md docs/reference/coverage.md	-	-	gap	records that contradict the system they describe
+family:ci	family	ci	theme:ci	.github/workflows/* bin/gate-merge-check.sh bin/worktree.sh bin/deploy-doctor.sh	-	-	ok	CI, worktrees, deployment and drift between repo and box
+theme:observability	theme	observability	theme:observability	bin/status-fleet-glyph.sh bin/admission-observe-report.sh tests/hooks/statusline*.sh bin/status-dashboard-generate.sh bin/audit-triage.sh	-	-	gap	making running state legible: statusline, ledger, reports
+theme:subagent	theme	subagent	theme:subagent	context-rules/user/subagent-contract.md evals/*/*/subagent-reports/*	-	-	gap	delegation: what a subagent may do and must return
+theme:architecture	theme	architecture	theme:architecture	contracts/descriptor.md contracts/marker.md	-	-	gap	architecture records and the cross-repo system graph
+theme:vendoring	theme	vendoring	theme:vendoring	vendor/* docs/reference/provenance.md docs/explanation/skill-unification.md bin/skill-install.sh bin/skill-collision-verify.sh	-	-	gap	intake of third-party code: copy, depend, or take the idea
+theme:browser	theme	browser	theme:browser	contracts/browser-routing.md bin/access-browser.sh bin/doc-visual-check.sh	-	-	gap	browser capability and its backends
+family:access	family	access	theme:access	-	-	-	ok	identity, credentials and permission boundaries — lives outside this tree
+theme:distribution	theme	distribution	theme:distribution	-	-	-	gap	packaging, publishing, discoverability — lives outside this tree
+type:task	type	task	task	-	-	-	ok	a concrete, implementable piece of work with no defect claim behind it
+theme:security	theme	security	theme:security	-	-	-	gap	credential boundaries, egress and the blast radius of a compromise
+theme:testing	theme	testing	theme:testing	tests/* fixtures/*	-	-	gap	the suites themselves: what they assert and whether they can fail
+priority:p0	priority	p0	P0-critical	-	-	-	ok	blocks production or the current delivery stage
+blocked:decision	blocked	decision	blocked:decision	-	-	-	ok	waiting on a product or methodology decision — the operator's, not a session's
+blocked:external-data	blocked	external-data	blocked:external-data	-	-	-	ok	waiting on external data, a licence or a third party
+blocked:review	blocked	review	blocked:review	-	-	-	ok	waiting on a PR review
+system:prefix	system	prefix	system:prefix	-	-	-	ok	what loads before the first word
+system:delegation	system	delegation	system:delegation	-	-	-	ok	subagents, briefs and what a delegate returns
+system:moment	system	moment	system:moment	-	-	-	ok	what arrives at the point of action: hooks, injection, the compaction seam
+system:verifier	system	verifier	system:verifier	-	-	-	ok	what checks the work before it lands
+system:delivery	system	delivery	system:delivery	-	-	-	ok	built is not delivered: the gate that cuts across every system
+system:fleet	system	fleet	system:fleet	-	-	-	ok	governance reaching the repo it governs
+finding:open	finding	open	finding	-	-	-	ok	a finding awaiting triage
+finding:accepted	finding	accepted	finding:accepted	-	-	-	ok	a finding the operator accepted
+finding:superseded	finding	superseded	finding:superseded	-	-	-	ok	a finding replaced by another
+finding:fixed	finding	fixed	finding:fixed	-	-	-	ok	a finding whose fix landed

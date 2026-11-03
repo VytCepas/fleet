@@ -1,0 +1,110 @@
+# schemas.tsv (harbor#1424) — the schema of every .tsv register: its columns, key, references, owner and reader.
+#
+# WHY THIS FILE EXISTS. A register's columns were declared in a comment, a header row, or nowhere, and 111 scripts
+# found a column by counting tabs, so a column added in the middle shifted every reader silently. One row per register
+# says what it holds; bin/standard-register.sh reads any register BY NAME through its row, and judges the tree both ways:
+# a tracked .tsv with no row is red, a row with no file is red (standard.register-declared), and a reference column
+# holding an id absent from its target is red (standard.reference-resolves). A register is its file plus its row here.
+#
+# standard_version: 2.0.0
+#
+# COLUMNS  id <TAB> header <TAB> columns <TAB> key <TAB> refs <TAB> owner <TAB> read_by <TAB> note
+#   id        the register's path from the repo root, or a glob with one * (it stands for a name within one directory); a trailing ?
+#             says the file may be absent (a repo's own overlay, or a dev-layer file the core export does not ship), and every other row
+#             names a file the tree must hold
+#   header    row when the first data line is a header row that must equal `columns`; none when the file has no header
+#             row (its columns are declared only here); = on a copy
+#   columns   the column names in order. A name ending in ? is optional and trailing. =<path> says the file is a copy
+#             of that register, a * standing for the name the glob matched (a vendored register): header, columns and key
+#             are the original's and its references are judged there
+#   key       the column, or columns joined with +, that is unique per row; - when no column is
+#   refs      space-separated <column>><target>: <target> is <register path>:<column> (the value must be a row's) or
+#             path:<prefix> (the value, after the prefix, must be a path in the tree); @<sep> after it splits a cell into
+#             several ids (@space for a blank); |<value> allows a literal. An empty cell and - are never references
+#   owner     the family that answers for it (terms.tsv, class family)
+#   read_by   the engine that reads it, or - when none does
+#   note      what it holds
+#
+# SCOPE. A register is every tracked *.tsv outside a fixtures/ directory and outside a directory or file named test*.
+# A repo that vendors the naming package declares its own registers in naming-schemas.tsv at its root, same shape.
+id	header	columns	key	refs	owner	read_by	note
+standards/naming/terms.tsv	row	id class pref broader vsm stability successor src alt depends_on definition	id	broader>standards/naming/terms.tsv:id successor>standards/naming/terms.tsv:id depends_on>standards/naming/terms.tsv:id@,	standard	bin/lint-name.sh	a word and every closed set
+standards/naming/aliases.tsv	row	id term kind surfaces remove_by note	id		standard	bin/lint-name.sh	a confined or rejected spelling and the term to use
+standards/naming/exemptions.tsv	row	id rule subject kind remove_by reason	id	rule>standards/naming/controls.tsv:id|*	standard	bin/lint-name.sh	a name the standard does not judge, with its reason
+standards/naming/surfaces.tsv	row	id renderer family checked example rule view note	id	rule>standards/naming/controls.tsv:id	standard	bin/lint-name.sh	a place a name is rendered, with its grammar
+standards/naming/kinds.tsv	row	id folder path_pattern surface required_fields layer level lifecycle generator share required_relations note	id	id>standards/naming/terms.tsv:id surface>standards/naming/surfaces.tsv:id layer>standards/naming/terms.tsv:id level>standards/naming/terms.tsv:id lifecycle>standards/naming/terms.tsv:id share>standards/naming/terms.tsv:id@,	standard	bin/lint-name.sh	a kind of artifact: where it lives and what it must carry
+standards/naming/registers.tsv	row	id file select census note	id	file>path:standards/naming/	standard	bin/lint-name.sh	a register namespace a reference or a stamp can name
+standards/naming/controls.tsv	row	id mode type engine surfaces moment function stability successor owner red_proof emitted title	id	type>standards/naming/terms.tsv:id engine>path: surfaces>standards/naming/surfaces.tsv:id@, moment>standards/naming/terms.tsv:id function>standards/naming/terms.tsv:id successor>standards/naming/controls.tsv:id owner>standards/naming/terms.tsv:id red_proof>path:	standard	bin/lint-name.sh	every control on the box: lint rule, check, admission rule, injection rule, CI gate and Vale rule
+standards/naming/renames.tsv	row	id old new surface wave remove_by reason	id	surface>standards/naming/surfaces.tsv:id	standard	bin/standard-rename.sh	a path rename the standard orders, one row each
+standards/naming/frozen.tsv	row	id kind name since share	id		standard	bin/standard-frozen-generate.sh	a name a stranger types or reads, frozen with the date it first appeared
+standards/naming/repo-kinds.tsv	row	id required optional note	id		standard	bin/lint-name.sh	the top-level entries each kind of repo carries
+standards/naming/dialects.tsv	row	id owner platform checker example note	id		standard	-	a naming dialect a repo may register for objects the standard does not name
+standards/naming/label-axes.tsv	row	id axis value legacy globs min max status meaning	id		standard	bin/lint-name.sh	an issue label as axis:value with the legacy label it replaces
+standards/naming/label-retired.tsv	row	id replaced_by reason	id		standard	bin/standard-label-sync.sh	a label the register retires, with the label that absorbs it
+standards/naming/verbs.tsv	row	id meaning exit kinds note	id	kinds>standards/naming/repo-kinds.tsv:id@space	standard	bin/lint-name.sh	a task verb a repo kind must carry in its justfile
+standards/naming/versions.tsv	row	id axis name value sha hold_at hold_reason upgrade note	id		standard	bin/lint-name.sh	the versions register: runtimes, tools, libraries and GitHub Actions, with hold_at and upgrade-as-PR (harbor#1426)
+standards/naming/writers.tsv	row	id kind value surface note	id	surface>standards/naming/surfaces.tsv:id	standard	bin/lint-renderer.sh	a script that creates a named thing, and the command patterns that find one
+standards/naming/words.tsv	row	id note	id		standard	bin/lint-name.sh	an English or technical word a name may carry beyond the terms
+standards/naming/schemas.tsv	row	id header columns key refs owner read_by note	id	owner>standards/naming/terms.tsv:id read_by>path:	standard	bin/standard-register.sh	this file: the schema of every .tsv register
+policy/clauses.tsv	row	id strength binding modality subject target relation min max enforced_by motivated_by falsifier anchor	id	strength>standards/naming/terms.tsv:id modality>standards/naming/terms.tsv:id enforced_by>standards/naming/controls.tsv:id@,|judgment	policy	bin/policy-check.sh	a clause of the constitution: its strength, binding, modality, the controls that enforce it, and its anchor in the prose
+policy/enforcement.tsv	row	id clause moment mode control since promoted_by checkable_at later_why	id	clause>policy/clauses.tsv:id moment>standards/naming/terms.tsv:id control>standards/naming/controls.tsv:id|-	policy	bin/policy-check.sh	a clause bound at a moment in a mode by a control: the enforcement matrix
+standards/rename-maps/*.tsv	row	old_path new_path wave recommendation confidence reason remove_by frozen surface reader?	old_path		standard	-	a rename wave's map, one file per wave
+naming-words.tsv?	=	=standards/naming/words.tsv	=		standard	bin/lint-name.sh	a repo's own words, in the shape of words.tsv; only a repo that vendors the standard carries one
+naming-families.tsv?	=	=standards/naming/terms.tsv	=		standard	bin/lint-name.sh	a repo's own families, in the shape of terms.tsv; only a repo that vendors the standard carries one
+naming-schemas.tsv?	=	=standards/naming/schemas.tsv	=		standard	bin/standard-register.sh	a repo's own registers, in the shape of schemas.tsv; only a repo that vendors the standard carries one
+naming-exemptions.tsv?	none	id rule subject kind remove_by reason	id		standard	bin/lint-name.sh	a repo's own exemptions, the columns of exemptions.tsv with the header row optional (the gate drops it); only a repo that vendors the standard carries one
+contracts/agents.tsv	row	role model effort tools input output done_when must_not stop_rule	role		agent	-	the role table a subagent brief is built from
+contracts/catalog-non-tools.tsv	row	glob why	glob		skill	bin/skill-catalog.sh	a name glob that is not a tool, with the reason
+contracts/confinement-coverage.tsv	row	id coverage why	id	id>standards/naming/controls.tsv:id	admission	bin/deploy-confinement.sh	how each admission rule is covered by the confinement
+contracts/confinement-mcp.tsv	none	server verdict reason	server		admission	bin/drift-wall.sh	a local MCP server and whether it must start under srt or is exempt, with the reason (harbor#1442)
+contracts/confinement-classes.tsv	row	class kind treatment where	class		admission	bin/admission-observe-report.sh	every class of Bash call that asks to leave the sandbox, and its treatment (harbor#1441)
+contracts/core-writes-allow.tsv	row	path target reason	path+target	path>path:	lint	bin/lint-core-writes.sh	a core script allowed to write a path
+contracts/credential-patterns.tsv	row	id ere note	id		access	bin/lint-secrets.sh	the shapes of a credential value
+contracts/decision-orphans.tsv	none	id reason	id		standard	bin/lint-conventions.sh	a decision record deliberately cited nowhere
+contracts/decision-reach.tsv	none	path why	path		standard	bin/lint-conventions.sh	a path read outside this repo, where a bare decision id is red
+contracts/dev-paths-allow.tsv	row	path dev reason	path+dev		lint	bin/lint-dev-paths.sh	a core file allowed to name a dev-layer path
+contracts/doc-folders.tsv	row	folder kind note	folder	kind>standards/naming/kinds.tsv:id	doc	bin/doc-shape.sh	a docs folder or file kinds.tsv has no row for, with its kind
+contracts/domain-allow.tsv	row	path term reason	path+term		lint	bin/lint-domain.sh	a core file allowed to name a workload term
+contracts/domain-repos-allow.tsv	row	path term reason	path+term		lint	bin/lint-domain.sh	a path allowed to name a repo term
+contracts/domain-terms.tsv	row	id pattern note	id		lint	bin/lint-domain.sh	a workload term core must not name
+contracts/event-kinds.tsv	row	kind shape subject emitter meaning	kind	emitter>path:@space	event	bin/lint-conventions.sh	every kind of event the stream carries
+contracts/event-rules.tsv	none	id pattern debounce rate backstop handler	id		event	bin/event-dispatch.sh	the event rules Harbor ships as presets, none switched on
+contracts/scheduled-checks.tsv?	none	id receipt command	id		check	bin/check-run.sh	the read-only checks launchd runs from main through check-run.sh: the id, who writes the receipt (tool or wrap) and the command
+contracts/fresh-checks.tsv	none	file check fix needs?	file+check		doc	bin/doc-fresh-verify.sh	a generated file and the command that proves it current
+contracts/hooks-external.tsv	none	script event why	script		lint	bin/lint-conventions.sh	a hook the box runs that no installer wires
+contracts/issue-taxonomy.tsv	none	kind label glob meaning	kind+label		standard	bin/standard-issue-label.sh	the issue type and theme sets, generated from label-axes.tsv
+contracts/launchd-wall-exempt.tsv	none	label path reason	label+path		admission	bin/drift-launchd-wall.sh	a launchd job allowed to run code from inside the confinement write list, with the reason (harbor#1442)
+contracts/layers.tsv	row	path layer note	path		deploy	bin/lint-layout-map.sh	the layer of every path
+contracts/layout-map.tsv	row	entry kind layer note	entry	layer>standards/naming/terms.tsv:id	standard	bin/lint-layout-map.sh	the kind and layer of each top-level repo entry
+contracts/leak-patterns.tsv	row	id kind pattern note	id		lint	bin/lint-leaks.sh	a pattern for a value that must not leave the box
+contracts/log-exempt.tsv	row	path kind why	path	path>path:	lint	bin/lint-conventions.sh	a script exempt from the run-log format, only shrinking
+contracts/obligation-kinds.tsv	row	kind open close deadline owner on_stop outlives reconcile opens_when	kind		status	bin/status-obligations.sh	a kind of obligation and how it opens and closes
+contracts/port-paths-exempt.tsv	row	file text why	file+text		lint	bin/lint-port-paths.sh	a line allowed to name a port path
+contracts/redteam-baseline.tsv	row	corpus id reason	corpus+id		eval	bin/eval-redteam-corpus.sh	an accepted finding of the red-team corpus
+contracts/redteam-sources.tsv	row	name url commit	name		eval	bin/eval-redteam-corpus.sh	a red-team corpus and the commit it is pinned at
+contracts/required-checks.tsv	none	repo check	repo+check		gate	bin/gate-merge-check.sh	the checks a PR must pass to merge, per repo
+contracts/roots.tsv	row	var base rel breaks shared?	var		scope	bin/deploy-install-lib.sh	a root variable and the base it resolves against
+contracts/scaffolder-plugins.tsv	row	key name	key		admission	bin/prod-guard-install.sh	a scaffolder plugin the guards know
+contracts/seams.tsv	row	id kind producer consumer copy_path pin schema freshness owner allowed_lag reason	id	freshness>standards/naming/controls.tsv:id	standard	bin/lint-name.sh	one row per cross-repo contract: producer, consumer, copy, pin, schema and freshness check (harbor#1425)
+contracts/session-waiting.tsv	none	id regex positive negative	id		session	hooks/session-state/session-state.sh	a pattern that says the session waits on the operator
+contracts/shims.tsv	row	name root rel	name	root>contracts/roots.tsv:var	deploy	bin/deploy-shim-install.sh	a PATH shim and the root it resolves against
+contracts/agent-tools.tsv	row	kind name use_when invocation	kind+name		skill	bin/skill-catalog.sh	the use-when and exact invocation of every agent-facing harbor verb and bin tool
+contracts/skill-book-router.tsv	row	skill situation	skill		skill	bin/skill-catalog.sh	the situation each skill answers
+contracts/streams.tsv	row	id path writer needle shape retention sensitivity on_fail target_on_fail lane	id		audit	bin/audit-stream-lib.sh	every log stream, its writer and its retention
+registries/context-baseline.tsv?	none	date bytes why instrument?	date		context	bin/context-budget.sh	the recorded always-on context surface
+registries/context-ratchet.tsv	none	bytes date why	-		context	bin/context-budget.sh	the always-on context ceiling, the last row counts
+registries/coverage-incidents.tsv?	row	incident source property status mechanism confidence evidence same-as unwatched	incident		lint	bin/lint-port-paths.sh	each incident and whether a mechanism watches it
+.agents/protected-paths.tsv	row	glob class reason	glob+class		gate	bin/gate-classify.sh	the paths only the operator may merge or deploy, derived
+.agents/required-checks.tsv	none	repo check	repo+check		gate	bin/gate-merge-check.sh	the required checks, read from the default branch on GitHub
+context-rules/user/default-way-route.tsv	row	kind tools recogniser content quiet home install reason surface deny	kind	surface>standards/naming/surfaces.tsv:id@,	context	context-rules/user/default-way-route.sh	the default way each kind of thing is made
+hooks/*/manifest.tsv	row	key value arg1? arg2? arg3?	-		context	bin/deploy-hooks.sh	a hook engine's manifest: how it is wired and what it senses
+evals/skill/e5trap/corpus-manifest.tsv?	none	name bytes digest	name		eval	-	the distractor skills of the trap corpus, by hash
+evals/context/e11live/rows.tsv?	none	label expect fired any_note	label		eval	-	one probe's outcome per row; rewritten by each run of evals/context/e11live/probe.sh
+standards/naming/kit.tsv	row	id item ref kinds share vendored note	id	kinds>standards/naming/repo-kinds.tsv:id@space|*	standard	bin/standard-kit.sh	what a repo of each kind inherits: the register, control family, tool, template, check and pin items, with their share and whether Yard vendors them (harbor#1436)
+contracts/systems.tsv	row	system verb run json summary	system+verb		scope	bin/scope-system.sh	a system and the verbs `harbor <system> <verb>` dispatches, by register (harbor#1436)
+vendor/naming/registry/*.tsv	=	=standards/naming/*.tsv	=		standard	bin/standard-vendor.sh	a vendored copy of a standards/naming register: its schema is the original's
+vendor/naming/MANIFEST.tsv	none	path sha256 source	path		standard	bin/standard-vendor.sh	the vendored package's files and their hashes
+contracts/env.tsv	row	var repo kind default meaning stability owner controls	var	owner>standards/naming/terms.tsv:id controls>standards/naming/controls.tsv:id@,	standard	bin/standard-inventory.sh	an environment variable harbor reads: its meaning, default, kind and owner; a kill-switch names the controls it switches; the readers are derived from the tree, never stored (harbor#1431)
+contracts/bin.tsv	row	path form purpose ticket	path		standard	bin/standard-inventory.sh	a file under bin/: its form (command, library, helper), purpose and ticket; the callers are derived by bin/standard-inventory.sh callers, never stored (harbor#1432)
+contracts/verbs.tsv	row	verb script json notes	verb		standard	bin/standard-inventory.sh	a harbor verb: the script it dispatches to, whether it takes --json and its note; contracts/cli.md renders its verb table from this file (harbor#1432)
+schedule-exempt.tsv?	row	repo reason remove_by	repo		standard	bin/standard-inventory.sh	a governed repo whose scheduled workflows the box check register does not carry, with the reason and the date the exemption lapses; the private layer holds it, since core cannot name a workload repo (harbor#1433)

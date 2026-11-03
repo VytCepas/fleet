@@ -1,0 +1,15 @@
+# label-retired.tsv (harbor#1427) — the labels the register retires: not a label source, a deny list.
+#
+# WHY THIS FILE EXISTS. label-axes.tsv is the only list of labels (harbor#1427). A label that carried state the
+# issue already carries (open, closed, blocked) has no register row and no rename, so without a row here the sync
+# could only call it unregistered. A row here makes that a plan line: `bin/standard-label-sync.sh` lists its
+# removal, and executes it only with --apply --remove-retired. Nothing here is removed by a plain --apply.
+#
+# standard_version: 2.0.0
+#
+# COLUMNS  id <TAB> replaced_by <TAB> reason
+#   id           a label name, or a prefix ending in * (every label that starts with it)
+#   replaced_by  the register label whose meaning absorbs it, or - when the issue's own state carries it
+#   reason       why it is retired
+id	replaced_by	reason
+status:*	-	state is the issue state (open, closed) or the blocked axis; a status label is a second copy that drifts (harbor#1423 condition 8)

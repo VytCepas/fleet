@@ -1,0 +1,19 @@
+# writers.tsv (harbor#978 item 8) — every script that CREATES a named thing, and the command patterns that find them.
+#
+# WHY THIS FILE EXISTS. A writer that builds a branch, issue title or PR title by hand is a second copy of the
+# grammar, and it drifts while reading correctly. `bin/lint-renderer.sh` (rule name.renderer-used) holds each
+# `writer` row to calling the renderer (`lint-name.sh --render`), and scans bin/ and hooks/ for the `pattern`
+# rows so a writer missing from this census is itself a finding. Workload writers are registered by their pack.
+#
+# standard_version: 2.0.0
+#
+# COLUMNS  id <TAB> kind <TAB> value <TAB> surface <TAB> note
+#   kind     writer (value: a repo-relative file) or pattern (value: an ERE a creating command line matches)
+#   surface  the surface in surfaces.tsv the written name is judged as
+id	kind	value	surface	note
+branch-create	pattern	git( -C [^ ]+)? (worktree add -b|checkout -b|switch -c) 	branch	a command that creates a branch
+issue-create	pattern	gh issue create 	issue-title	a command that opens an issue
+pr-create	pattern	gh pr create 	commit	a command that opens a PR; its title is a commit subject
+worktree-sh	writer	bin/worktree.sh	branch	worktree.sh new <branch>
+findings-sh	writer	bin/lint-findings.sh	issue-title	finding issues and heal PRs
+ci-runs-on-sh	writer	bin/ci-runs-on.sh	branch	the runs-on adoption branch and PR

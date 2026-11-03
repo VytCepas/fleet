@@ -1,0 +1,41 @@
+# verbs.tsv (harbor#1428) — the task verbs a repo's justfile answers, and which kinds of repo must carry each.
+#
+# WHY THIS FILE EXISTS. `just test` meant a different thing in every repo, and a scaffolded repo got a verb set
+# that its own scaffolder and its controller did not carry (harbor#1428, measured 2026-11-01). One row per verb
+# says what it means and what its exit code promises, so the same word means the same thing everywhere; the
+# `kinds` cell says which repo-kinds.tsv kinds must have it. `bin/lint-name.sh --check repo-kind <dir>` reads the
+# recipe names of <dir>/justfile and reports a required verb it lacks as name.repo-verb; the fleet audit calls it.
+# yard renders the verb set of a scaffolded repo's justfile from this file (tools/gen_justfile.py there).
+# An exemption is a row in the repo's own naming-exemptions.tsv: rule name.repo-verb, subject repo-verb:<id>.
+#
+# standard_version: 2.0.0
+#
+# COLUMNS  id <TAB> meaning <TAB> exit <TAB> kinds <TAB> note
+#   id      the recipe name, a bare lowercase kebab word
+#   meaning what running it does, one clause
+#   exit    what the exit code promises: always 0 = done, non-zero = the thing is not so; a verb that cannot run
+#           here says so and exits non-zero (never a silent 0)
+#   kinds   space-separated repo-kinds.tsv ids that must carry the verb; - when no kind must (an optional verb
+#           the standard still names, so its meaning is the same where it exists)
+#   note    why the kinds are the ones they are
+id	meaning	exit	kinds	note
+setup	install or sync the dependencies a checkout needs	0 ready, non-zero a step failed	scaffolder fleet-controller workload data	the first command in a clean checkout
+lint	static checks over the repo, writing nothing	0 clean, non-zero a finding	control-plane scaffolder fleet-controller workload data	every kind
+typecheck	the static type check of the project code	0 clean, non-zero a type error	scaffolder fleet-controller workload	-
+format	rewrite the project code to the formatter's output	0 done	scaffolder fleet-controller workload	the one verb that writes source
+test	the whole suite	0 all pass, non-zero a failure	control-plane scaffolder fleet-controller workload data	every kind
+test-quick	the suite, stopping at the first failure	0 all pass, non-zero a failure	scaffolder fleet-controller workload	the edit loop
+test-cov	the suite with a coverage report and its floor	0 above the floor, non-zero a failure or below it	-	optional: a stack with no coverage tool has no floor
+test-mutation	mutation testing over the core logic	0 survivors within bounds, non-zero above	-	optional: slow, nightly, python stacks
+audit	known-vulnerability scan of the dependencies	0 none found, non-zero a finding	scaffolder fleet-controller workload	-
+sbom	write a software bill of materials of the runtime dependencies	0 written	scaffolder fleet-controller workload	-
+license	dependency license scan	0 compliant, non-zero a denied license	scaffolder fleet-controller workload	-
+fuzz	property-based or fuzz tests	0 pass, non-zero a failure	scaffolder fleet-controller workload	nightly, never a PR gate
+scan	secret scan of the staged changes	0 clean, non-zero a secret found	scaffolder fleet-controller workload	-
+naming	the naming standard ratchet over the repo	0 no new finding, 3 unchecked	scaffolder fleet-controller workload	exit 3 is never a pass
+docs	serve or build the docs site	0 done	scaffolder fleet-controller workload	-
+ci	everything CI runs, in CI's order	0 CI would pass	scaffolder fleet-controller workload data	the full gate
+fast-ci	the local pre-push gate: lint and the suite	0 pass	scaffolder fleet-controller workload	lighter than ci on purpose
+ci-local-on	route CI to the self-hosted runner	0 variable set	scaffolder fleet-controller workload	needs gh and a registered runner
+ci-local-off	route CI back to GitHub-hosted runners	0 variable removed	scaffolder fleet-controller workload	-
+code-map	regenerate the low-token module map	0 written	-	optional: python stacks

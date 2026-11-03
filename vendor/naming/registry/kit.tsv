@@ -1,0 +1,144 @@
+# kit.tsv (harbor#1436) — what a repo of each kind inherits, and whether yard vendors it.
+#
+# WHY THIS FILE EXISTS. T18.1 to T18.12 built registers, controls, checks and pins, and a new repo got the naming package
+# only: yard vendored 14 files and nothing said what the rest was for. One row per item says which repo kinds carry it,
+# which share it belongs to, and whether yard copies it into the repo. `bin/standard-kit.sh --render <kind>` prints a
+# kind's items, yard renders exactly those, `--carries <repo>` holds a repo to its kind's list, and a register or a
+# control family with no row here is red (standard.kit-complete). bin/standard-vendor.sh builds its package from the
+# vendored=yes rows, so "yard vendors it" is this file and not a second list.
+#
+# standard_version: 2.0.0
+#
+# COLUMNS  id <TAB> item <TAB> ref <TAB> kinds <TAB> share <TAB> vendored <TAB> note
+#   id        <item>.<name>, unique
+#   item      register (ref: a path in schemas.tsv) | control (ref: a family, the id's first word, in controls.tsv) |
+#             tool (ref: a harbor file a repo runs) | check (ref: the repo's check register fragment) |
+#             template (ref: a file yard renders in the repo) | pin (ref: an axis of versions.tsv)
+#   kinds     space-separated repo-kinds.tsv ids that inherit the item, or * for every kind
+#   share     core (every system built from the core share, installed by harbor deploy) | hub (the platform repos: the control plane,
+#             the scaffolder and the fleet controller) | workload (the repos a team writes) | personal (one operator's own layer)
+#   vendored  yes when yard copies the item into the repo (a register file, a tool), no when the repo reaches it another way
+#   note      why
+id	item	ref	kinds	share	vendored	note
+register.terms	register	standards/naming/terms.tsv	*	core	yes	the standard's own register; yard vendors it into every repo
+register.aliases	register	standards/naming/aliases.tsv	*	core	yes	the standard's own register; yard vendors it into every repo
+register.exemptions	register	standards/naming/exemptions.tsv	*	core	yes	the standard's own register; yard vendors it into every repo
+register.surfaces	register	standards/naming/surfaces.tsv	*	core	yes	the standard's own register; yard vendors it into every repo
+register.kinds	register	standards/naming/kinds.tsv	*	core	yes	the standard's own register; yard vendors it into every repo
+register.registers	register	standards/naming/registers.tsv	*	core	yes	the standard's own register; yard vendors it into every repo
+register.controls	register	standards/naming/controls.tsv	*	core	yes	the standard's own register; yard vendors it into every repo
+register.renames	register	standards/naming/renames.tsv	*	core	yes	the standard's own register; yard vendors it into every repo
+register.frozen	register	standards/naming/frozen.tsv	*	core	yes	the standard's own register; yard vendors it into every repo
+register.repo-kinds	register	standards/naming/repo-kinds.tsv	*	core	yes	the standard's own register; yard vendors it into every repo
+register.dialects	register	standards/naming/dialects.tsv	*	core	yes	the standard's own register; yard vendors it into every repo
+register.label-axes	register	standards/naming/label-axes.tsv	*	core	yes	the standard's own register; yard vendors it into every repo
+register.label-retired	register	standards/naming/label-retired.tsv	*	core	yes	the standard's own register; yard vendors it into every repo
+register.verbs	register	standards/naming/verbs.tsv	*	core	yes	the standard's own register; yard vendors it into every repo
+register.versions	register	standards/naming/versions.tsv	*	core	yes	the standard's own register; yard vendors it into every repo
+register.writers	register	standards/naming/writers.tsv	*	core	yes	the standard's own register; yard vendors it into every repo
+register.words	register	standards/naming/words.tsv	*	core	yes	the standard's own register; yard vendors it into every repo
+register.schemas	register	standards/naming/schemas.tsv	*	core	yes	the standard's own register; yard vendors it into every repo
+register.rename-maps	register	standards/rename-maps/*.tsv	control-plane	hub	no	rename waves, harbor only
+register.naming-words-tsv	register	naming-words.tsv?	*	workload	no	a repo's own overlay of the standard's rows; the repo writes it
+register.naming-families-tsv	register	naming-families.tsv?	*	workload	no	a repo's own overlay of the standard's rows; the repo writes it
+register.naming-schemas-tsv	register	naming-schemas.tsv?	*	workload	no	a repo's own overlay of the standard's rows; the repo writes it
+register.naming-exemptions-tsv	register	naming-exemptions.tsv?	*	workload	no	a repo's own exemptions; the repo writes it
+register.contracts-agents-tsv	register	contracts/agents.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-catalog-non-tools-tsv	register	contracts/catalog-non-tools.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-confinement-coverage-tsv	register	contracts/confinement-coverage.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-core-writes-allow-tsv	register	contracts/core-writes-allow.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-credential-patterns-tsv	register	contracts/credential-patterns.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-decision-orphans-tsv	register	contracts/decision-orphans.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-decision-reach-tsv	register	contracts/decision-reach.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-dev-paths-allow-tsv	register	contracts/dev-paths-allow.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-doc-folders-tsv	register	contracts/doc-folders.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-domain-allow-tsv	register	contracts/domain-allow.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-domain-repos-allow-tsv	register	contracts/domain-repos-allow.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-domain-terms-tsv	register	contracts/domain-terms.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-event-kinds-tsv	register	contracts/event-kinds.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-event-rules-tsv	register	contracts/event-rules.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-fresh-checks-tsv	register	contracts/fresh-checks.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-hooks-external-tsv	register	contracts/hooks-external.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-issue-taxonomy-tsv	register	contracts/issue-taxonomy.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-layers-tsv	register	contracts/layers.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-layout-map-tsv	register	contracts/layout-map.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-leak-patterns-tsv	register	contracts/leak-patterns.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-log-exempt-tsv	register	contracts/log-exempt.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-obligation-kinds-tsv	register	contracts/obligation-kinds.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-port-paths-exempt-tsv	register	contracts/port-paths-exempt.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-redteam-baseline-tsv	register	contracts/redteam-baseline.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-redteam-sources-tsv	register	contracts/redteam-sources.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-required-checks-tsv	register	contracts/required-checks.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-roots	register	contracts/roots.tsv	control-plane	core	no	the roots every tool resolves; installed beside scope-roots.sh
+register.contracts-scaffolder-plugins-tsv	register	contracts/scaffolder-plugins.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-seams	register	contracts/seams.tsv	control-plane scaffolder fleet-controller	hub	no	the cross-repo contracts; fleet reads it for freshness
+register.contracts-session-waiting-tsv	register	contracts/session-waiting.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-shims-tsv	register	contracts/shims.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-skill-book-router-tsv	register	contracts/skill-book-router.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-streams-tsv	register	contracts/streams.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-agent-tools-tsv	register	contracts/agent-tools.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-bin-tsv	register	contracts/bin.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-confinement-classes-tsv	register	contracts/confinement-classes.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-confinement-mcp-tsv	register	contracts/confinement-mcp.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-env-tsv	register	contracts/env.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-launchd-wall-exempt-tsv	register	contracts/launchd-wall-exempt.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-scheduled-checks-tsv	register	contracts/scheduled-checks.tsv?	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.contracts-verbs-tsv	register	contracts/verbs.tsv	control-plane	hub	no	a contract of the control plane's tools; not inherited by a workload
+register.policy-clauses-tsv	register	policy/clauses.tsv	control-plane	hub	no	the constitution as a register, one row per clause (harbor#1026); the control plane keeps it
+register.policy-enforcement-tsv	register	policy/enforcement.tsv	control-plane	hub	no	which control enforces which clause (harbor#1028); the control plane keeps it
+register.schedule-exempt-tsv	register	schedule-exempt.tsv?	control-plane	hub	no	a control-plane register of repos whose scheduled workflows the box register does not carry (private layer)
+register.registries-context-baseline-tsv	register	registries/context-baseline.tsv?	control-plane	hub	no	a control-plane register (policy, hooks, evals, context)
+register.registries-context-ratchet-tsv	register	registries/context-ratchet.tsv	control-plane	hub	no	a control-plane register (policy, hooks, evals, context)
+register.registries-coverage-incidents-tsv	register	registries/coverage-incidents.tsv?	control-plane	hub	no	a control-plane register (policy, hooks, evals, context)
+register.agents-protected-paths-tsv	register	.agents/protected-paths.tsv	scaffolder fleet-controller workload data	workload	no	rendered by yard from its template
+register.agents-required-checks-tsv	register	.agents/required-checks.tsv	scaffolder fleet-controller workload data	workload	no	rendered by yard from its template
+register.context-rules-user-default-way-route-tsv	register	context-rules/user/default-way-route.tsv	control-plane	hub	no	a control-plane register (policy, hooks, evals, context)
+register.hooks-manifest-tsv	register	hooks/*/manifest.tsv	control-plane	hub	no	a control-plane register (policy, hooks, evals, context)
+register.evals-skill-e5trap-corpus-manifest-tsv	register	evals/skill/e5trap/corpus-manifest.tsv?	control-plane	hub	no	a control-plane register (policy, hooks, evals, context)
+register.evals-context-e11live-rows-tsv	register	evals/context/e11live/rows.tsv?	control-plane	hub	no	a control-plane register (policy, hooks, evals, context)
+register.vendored-registry-tsv	register	vendor/naming/registry/*.tsv	*	core	no	the vendored copy itself: it is the delivery of the rows above, not an item to deliver
+register.vendored-manifest-tsv	register	vendor/naming/MANIFEST.tsv	*	core	no	the vendored copy itself: it is the delivery of the rows above, not an item to deliver
+register.kit	register	standards/naming/kit.tsv	*	core	yes	the standard's own register; yard vendors it into every repo
+register.contracts-systems	register	contracts/systems.tsv	control-plane	core	no	the systems harbor dispatches; installed beside the harbor command
+control.name	control	name	*	core	yes	judged in every repo by the vendored lint-name.sh
+control.skill	control	skill	control-plane	hub	no	engine lives in harbor; a repo inherits the verdict through the fleet audit, not the engine
+control.standard	control	standard	control-plane scaffolder fleet-controller	hub	no	engine lives in harbor; a repo inherits the verdict through the fleet audit, not the engine
+control.posix	control	posix	control-plane	hub	no	engine lives in harbor; a repo inherits the verdict through the fleet audit, not the engine
+control.lint	control	lint	control-plane	hub	no	engine lives in harbor; a repo inherits the verdict through the fleet audit, not the engine
+control.admission	control	admission	control-plane	hub	no	engine lives in harbor; a repo inherits the verdict through the fleet audit, not the engine
+control.test	control	test	control-plane	hub	no	engine lives in harbor; a repo inherits the verdict through the fleet audit, not the engine
+control.deploy	control	deploy	control-plane	hub	no	engine lives in harbor; a repo inherits the verdict through the fleet audit, not the engine
+control.doc	control	doc	control-plane	hub	no	engine lives in harbor; a repo inherits the verdict through the fleet audit, not the engine
+control.scope	control	scope	control-plane	hub	no	engine lives in harbor; a repo inherits the verdict through the fleet audit, not the engine
+control.audit	control	audit	control-plane	hub	no	engine lives in harbor; a repo inherits the verdict through the fleet audit, not the engine
+control.drift	control	drift	control-plane	hub	no	engine lives in harbor; a repo inherits the verdict through the fleet audit, not the engine
+control.context	control	context	control-plane	hub	no	engine lives in harbor; a repo inherits the verdict through the fleet audit, not the engine
+control.policy	control	policy	control-plane	hub	no	engine lives in harbor; a repo inherits the verdict through the fleet audit, not the engine
+control.memory	control	memory	control-plane	hub	no	engine lives in harbor; a repo inherits the verdict through the fleet audit, not the engine
+control.git	control	git	control-plane	hub	no	engine lives in harbor; a repo inherits the verdict through the fleet audit, not the engine
+control.ci	control	ci	control-plane	hub	no	engine lives in harbor; a repo inherits the verdict through the fleet audit, not the engine
+control.event	control	event	control-plane	hub	no	engine lives in harbor; a repo inherits the verdict through the fleet audit, not the engine
+control.check	control	check	control-plane	hub	no	engine lives in harbor; a repo inherits the verdict through the fleet audit, not the engine
+control.module	control	module	control-plane	hub	no	engine lives in harbor; a repo inherits the verdict through the fleet audit, not the engine
+tool.lint-name	tool	bin/lint-name.sh	*	core	yes	vendored into vendor/naming/ so the repo judges itself offline
+tool.lint-renderer	tool	bin/lint-renderer.sh	*	core	yes	vendored into vendor/naming/ so the repo judges itself offline
+tool.library-log	tool	bin/library-log.sh	*	core	yes	vendored into vendor/naming/ so the repo judges itself offline
+tool.standard-vendor	tool	bin/standard-vendor.sh	*	core	yes	vendored into vendor/naming/ so the repo judges itself offline
+tool.standard-register	tool	bin/standard-register.sh	*	core	yes	vendored into vendor/naming/ so the repo judges itself offline
+tool.standard-kit	tool	bin/standard-kit.sh	*	core	yes	vendored into vendor/naming/ so the repo judges itself offline
+tool.doc-shape	tool	bin/doc-shape.sh	*	core	yes	vendored into vendor/naming/ so the repo judges itself offline
+tool.doc-fresh-verify	tool	bin/doc-fresh-verify.sh	*	core	yes	vendored into vendor/naming/ so the repo judges itself offline
+tool.standard-rename	tool	bin/standard-rename.sh	*	core	no	a register's reader in the schema table; installed with the core share, not vendored into a repo
+tool.standard-frozen-generate	tool	bin/standard-frozen-generate.sh	*	core	no	a register's reader in the schema table; installed with the core share, not vendored into a repo
+tool.standard-label-sync	tool	bin/standard-label-sync.sh	*	core	no	a register's reader in the schema table; installed with the core share, not vendored into a repo
+check.register	check	.agents/checks.md	scaffolder fleet-controller workload data	core	no	the repo's own check register fragment, header only until the repo registers a check
+template.readme	template	README.md	scaffolder fleet-controller workload data	core	no	rendered by yard from templates/base
+template.agents	template	AGENTS.md	scaffolder fleet-controller workload data	core	no	rendered by yard from templates/base
+template.claude	template	CLAUDE.md	scaffolder fleet-controller workload data	core	no	rendered by yard from templates/base
+template.justfile	template	justfile	scaffolder fleet-controller workload data	core	no	rendered by yard from templates/base
+template.agents-config	template	.agents/config.yaml	scaffolder fleet-controller workload data	core	no	rendered by yard from templates/base
+template.renovate	template	renovate.json	scaffolder fleet-controller workload data	core	no	rendered by yard from templates/base
+pin.runtime	pin	runtime	scaffolder fleet-controller workload data	core	yes	versions.tsv rows of this axis reach the repo through the vendored register
+pin.tool	pin	tool	scaffolder fleet-controller workload data	core	yes	versions.tsv rows of this axis reach the repo through the vendored register
+pin.library	pin	library	workload	core	yes	versions.tsv rows of this axis reach the repo through the vendored register
+pin.action	pin	action	scaffolder fleet-controller workload data	core	yes	versions.tsv rows of this axis reach the repo through the vendored register

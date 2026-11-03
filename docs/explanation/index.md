@@ -1,3 +1,9 @@
+---
+kind: explanation
+owner: @VytCepas
+status: unreviewed
+---
+
 # Explanation
 
 Understanding-oriented discussion: why the system is shaped the way it is,

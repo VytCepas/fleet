@@ -109,12 +109,14 @@ also_copy = [
     "README.md",
     "conftest.py",
     "context-rules",
+    "contracts",
     "contrib",
     "docs",
     "fixtures",
     "gates",
     "justfile",
     "schemas",
+    "vendor",
 ]
 only_mutate = [
     "*/naming.py",

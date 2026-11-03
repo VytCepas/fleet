@@ -1,0 +1,83 @@
+# exemptions.tsv (harbor#950) — every name a naming rule does not judge, and why. There are no inline ignores.
+#
+# WHY THIS FILE EXISTS. A rule that reddens a whole tree on arrival gets switched off, and a
+# disabled rule protects nothing (CONSTITUTION §2.11). So the names that predate the standard are
+# enumerated here, generated from each rule's own first scan of the tree, and new names are bound
+# from birth. The list is decided by a person and checked, never judged at runtime.
+#
+# standard_version: 2.0.0
+#
+# KIND
+#   tool-required  a name a tool we do not own looks up (D-1); never expires. The reason names
+#                  the tool.
+#   world-name     a name the world gave the thing: one row per vendored tree (D-52); never expires
+#   legacy         a name from before the standard. Generated from the first scan (harbor#950,
+#                  `bin/lint-name.sh --gen exemptions`), and ONLY SHRINKS: a row that no longer
+#                  exempts anything is name.exemption-stale, a row added after the base is
+#                  name.exemption-grow. Expires on remove_by; an expired row exempts nothing.
+#                  remove_by is the date of the rename wave that retires the row (harbor#961),
+#                  one batch a week, so the list never expires on one day; the reason names it.
+#
+# SUBJECT  a repo-relative path, a <register>:<name> such as env:HELM_ROOT, a directory prefix
+#          ending in /, or **/<basename> for that basename at any depth (a .tmpl beside it too;
+#          * in a basename matches within one segment).
+# RULE     one rule id; * (every rule) only on a tool-required or world-name row.
+#          No row may name standards/naming/, standards/naming.md, bin/lint-name.sh or
+#          fixtures/naming/: the registry cannot exempt itself (name.exemption-self), and the
+#          lint never applies a row to them.
+#
+# COLUMNS  id <TAB> rule <TAB> subject <TAB> kind <TAB> remove_by <TAB> reason
+id	rule	subject	kind	remove_by	reason
+tool-0001	name.case	**/CLAUDE.md	tool-required	never	Claude Code reads CLAUDE.md by name
+tool-0002	name.case	**/CLAUDE.local.md	tool-required	never	Claude Code reads CLAUDE.local.md by name
+tool-0003	name.case	**/AGENTS.md	tool-required	never	the agents.md convention reads AGENTS.md by name
+tool-0004	name.case	**/SKILL.md	tool-required	never	Claude Code reads a skill's SKILL.md by name
+tool-0005	name.case	**/MEMORY.md	tool-required	never	Claude Code auto-memory reads MEMORY.md by name
+tool-0006	name.case	**/CODEOWNERS	tool-required	never	GitHub reads CODEOWNERS by name
+tool-0007	name.case	**/SECURITY.md	tool-required	never	GitHub community files
+tool-0008	name.case	**/CONTRIBUTING.md	tool-required	never	GitHub community files
+tool-0009	name.case	**/CODE_OF_CONDUCT.md	tool-required	never	GitHub community files
+tool-0010	name.separator	**/CODE_OF_CONDUCT.md	tool-required	never	GitHub community files
+tool-0011	name.case	**/SUPPORT.md	tool-required	never	GitHub community files
+tool-0012	name.case	**/FUNDING.yml	tool-required	never	GitHub community files
+tool-0013	name.case	**/ISSUE_TEMPLATE	tool-required	never	GitHub reads .github/ISSUE_TEMPLATE/ by name
+tool-0014	name.separator	**/ISSUE_TEMPLATE	tool-required	never	GitHub reads .github/ISSUE_TEMPLATE/ by name
+tool-0015	name.case	**/PULL_REQUEST_TEMPLATE.md	tool-required	never	GitHub reads the PR template by name
+tool-0016	name.separator	**/PULL_REQUEST_TEMPLATE.md	tool-required	never	GitHub reads the PR template by name
+tool-0017	name.case	**/Makefile	tool-required	never	make reads Makefile by name
+tool-0018	name.case	**/Dockerfile	tool-required	never	docker reads Dockerfile by name
+tool-0019	name.case	**/README.md	tool-required	never	D-1: README, LICENSE and CHANGELOG stay uppercase by convention
+tool-0020	name.case	**/LICENSE	tool-required	never	D-1: README, LICENSE and CHANGELOG stay uppercase by convention
+tool-0021	name.case	**/CHANGELOG.md	tool-required	never	D-1: README, LICENSE and CHANGELOG stay uppercase by convention
+tool-0022	name.abbreviation	**/commit-msg	tool-required	never	git runs the commit-msg hook by name
+tool-0024	name.separator	**/dot_*	tool-required	never	D-56: the scaffolder's template engine reads the dot_ prefix as a leading dot
+tool-0023	name.extension	**/com.*.plist	tool-required	never	launchd defines the label, so a plist name carries the id's dots: com.harbor.<id>.plist (§6.3)
+world-0001	*	vendor/	world-name	never	D-52: a vendored upstream tree keeps the upstream's names; our wrappers follow the standard
+legacy-0022	name.abbreviation	tests/obs	legacy	2027-01-25	first scan, harbor#950; W2 tests
+legacy-0545	name.env	env:FLEET_CACHE	legacy	2027-02-15	first scan, harbor#950; W5 state, env and launchd
+legacy-0546	name.env	env:FLEET_MAX_AGE	legacy	2027-02-15	first scan, harbor#950; W5 state, env and launchd
+legacy-0699	name.extension	skills/test-strength/targets/floor.target	legacy	2027-03-01	first scan, harbor#950; skills (D-35)
+legacy-0701	name.extension	skills/test-strength/targets/prove-engine.target	legacy	2027-03-01	first scan, harbor#950; skills (D-35)
+legacy-0767	name.family	bin/annotate-web.sh	legacy	2027-01-25	first scan, harbor#950; W3 bin
+legacy-0802	name.family	bin/govern-hook.sh	legacy	2027-02-01	first scan, harbor#950; W3 bin
+legacy-0803	name.family	bin/govern-token.sh	legacy	2027-02-01	first scan, harbor#950; W3 bin
+legacy-0835	name.family	bin/pin-instructions.sh	legacy	2027-02-01	first scan, harbor#950; W3 bin
+legacy-0839	name.family	bin/prod-guard-ambient.sh	legacy	2027-02-01	first scan, harbor#950; W3 bin
+legacy-0840	name.family	bin/prod-guard-install.sh	legacy	2027-02-01	first scan, harbor#950; W3 bin
+legacy-1262	name.test-path	tests/checks	legacy	2027-01-25	first scan, harbor#950; W2 tests
+legacy-1297	name.test-path	tests/cli	legacy	2027-01-25	first scan, harbor#950; W2 tests
+legacy-1332	name.test-path	tests/guards	legacy	2027-01-25	first scan, harbor#950; W2 tests
+legacy-1345	name.test-path	tests/hooks	legacy	2027-01-25	first scan, harbor#950; W2 tests
+legacy-1365	name.test-path	tests/install	legacy	2027-01-25	first scan, harbor#950; W2 tests
+legacy-1383	name.test-path	tests/lib	legacy	2027-01-25	first scan, harbor#950; W2 tests
+legacy-1393	name.test-path	tests/obs	legacy	2027-01-25	first scan, harbor#950; W2 tests
+legacy-1409	name.test-path	tests/skills	legacy	2027-01-25	first scan, harbor#950; W2 tests
+tool-0025	name.case	**/NOTICE	tool-required	never	Apache 2.0 NOTICE file: like LICENSE, it has no extension and keeps its name (sitting B Q11)
+world-0002	name.case	fixtures/memory/corpus/	world-name	never	the fixture imitates a real memory store whose directory names are what the tests read (sitting B Q11)
+world-0003	name.separator	fixtures/memory/corpus/	world-name	never	the fixture imitates a real memory store; a note with a space in its name is a case the tests cover (sitting B Q11)
+world-0004	name.abbreviation	fixtures/lint-module/	world-name	never	the fixture trees are the inputs of the module lint, and their package is named pkg on purpose (sitting B Q11)
+world-0005	name.alias	rule:admission.floor-fail-closed	world-name	never	D-19: a rule id is permanent once published, so it keeps the word it was born with (sitting B Q11)
+world-0006	name.alias	rule:admission.floor-integrity	world-name	never	D-19: a rule id is permanent once published, so it keeps the word it was born with (sitting B Q11)
+world-0007	name.alias	rule:admission.merge-backstop-box	world-name	never	D-19: a rule id is permanent once published, so it keeps the word it was born with (sitting B Q11)
+world-0008	name.alias	rule:admission.prod-guard-ambient	world-name	never	D-19: a rule id is permanent once published, so it keeps the word it was born with (sitting B Q11)
+world-0009	name.abbreviation	rule:admission.extract-over-cfg-ancestor	world-name	never	D-19: a rule id is permanent once published, so it keeps the word it was born with (sitting B Q11)
