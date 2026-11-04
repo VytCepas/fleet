@@ -153,7 +153,7 @@ live in side by side: `$PORT_ROOT`, else `~/port`. An empty `PORT_ROOT` counts
 as unset, and with neither `PORT_ROOT` nor `HOME` set there is no default —
 discovery scans nothing and says why rather than guessing `/port`.
 Anything with a descriptor (`.agents/config.yaml` on a current scaffold,
-`.claude/config.yaml` on a pre-PI-627 one — either is found) counts as a
+`example:.claude/config.yaml` on a pre-PI-627 one — either is found) counts as a
 project; the orchestrator only ever *reads* that contract.
 
 Anything **without** a repo is invisible here by design — it has no descriptor,
