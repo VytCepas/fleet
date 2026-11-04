@@ -209,17 +209,20 @@ function loadfile(rel, i,   abs, line, nf, f, first, ln, r, c, k, n, a, nm, ragg
   }
 }
 function schemaof(rel,   i) { i = findschema(rel); if (i) loadfile(rel, i); return i }
-function targetset(tf, tc,   tk, i, r, c) {
+function targetset(tf, tc,   tk, lf, i, r, c) {
   tk = tf SUBSEP tc
   if (tk in TOK) return TOK[tk]
   TOK[tk] = 0
-  if (!(tf in FILES)) { fnd("standard.reference-resolves", "target:" tf, "the target register " tf " is not in the tree"); return 0 }
-  i = schemaof(tf)
+  # a workload holds the standard'"'"'s registers only as the vendored copy (standard-vendor.sh), so standards/naming/<f> is read there; absent in both is still red
+  lf = tf
+  if (!(lf in FILES) && substr(lf, 1, 16) == "standards/naming" && ("vendor/naming/registry/" substr(lf, 18)) in FILES) lf = "vendor/naming/registry/" substr(lf, 18)
+  if (!(lf in FILES)) { fnd("standard.reference-resolves", "target:" tf, "the target register " tf " is not in the tree"); return 0 }
+  i = schemaof(lf)
   if (!i) { fnd("standard.reference-resolves", "target:" tf, "the target register " tf " has no schema row"); return 0 }
-  if (tf in LOADERR) return 0
-  if (!((tf, tc) in FCI)) { fnd("standard.reference-resolves", "target:" tf ":" tc, "the target register " tf " has no column " tc); return 0 }
-  c = FCI[tf, tc]
-  for (r = 1; r <= FNR_[tf]; r++) TV[tf, tc, RV[tf, r, c]] = 1
+  if (lf in LOADERR) return 0
+  if (!((lf, tc) in FCI)) { fnd("standard.reference-resolves", "target:" tf ":" tc, "the target register " tf " has no column " tc); return 0 }
+  c = FCI[lf, tc]
+  for (r = 1; r <= FNR_[lf]; r++) TV[tf, tc, RV[lf, r, c]] = 1
   TOK[tk] = 1
   return 1
 }

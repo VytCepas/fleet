@@ -81,3 +81,7 @@ world-0006	name.alias	rule:admission.floor-integrity	world-name	never	D-19: a ru
 world-0007	name.alias	rule:admission.merge-backstop-box	world-name	never	D-19: a rule id is permanent once published, so it keeps the word it was born with (sitting B Q11)
 world-0008	name.alias	rule:admission.prod-guard-ambient	world-name	never	D-19: a rule id is permanent once published, so it keeps the word it was born with (sitting B Q11)
 world-0009	name.abbreviation	rule:admission.extract-over-cfg-ancestor	world-name	never	D-19: a rule id is permanent once published, so it keeps the word it was born with (sitting B Q11)
+world-0010	name.word-unregistered	fixtures/lint-module/	world-name	never	the fixture trees invent two systems, sysa and sysb, whose names are in the module lint's graph and expect files (harbor#1097; as world-0004)
+world-0011	name.word-unregistered	fixtures/memory/corpus/	world-name	never	a note with a space in its name is a case the memory tests cover (harbor#1097; as world-0003)
+world-0012	name.word-unregistered	fixtures/standard-catalog/repo/	world-name	never	the fixture repo imitates a tree with a test directory that is no family, tests/misc, which the catalog's drift expectations name (harbor#1097)
+world-0013	name.word-unregistered	tests/guards/selfedit.jsonl	world-name	never	D-19: the guard rule ids selfedit:* are frozen and are read off this file's name (standard-frozen-generate.sh), so the file keeps the word (harbor#1097; as world-0005)

@@ -335,6 +335,12 @@ tsv	abbreviation,extension	tsv	-	-	stable	-	harbor#950 (D-18 registered list ext
 mcp	abbreviation	mcp	-	-	experimental	-	harbor#950 (D-18 registered list extended)	-	-	Registered abbreviation: Model Context Protocol
 os	abbreviation	os	-	-	experimental	-	harbor#950 (D-18 registered list extended)	-	-	Registered abbreviation: operating system
 ts	abbreviation,extension	ts	-	-	stable	-	harbor#950 (D-18 registered list extended); harbor#950 (standard §6.3)	-	-	Registered abbreviation: timestamp field; TypeScript
+adr	abbreviation	adr	-	-	experimental	-	harbor#1449 (D-54 domain abbreviation)	-	-	Registered abbreviation: architecture decision record
+fx	abbreviation	fx	-	-	experimental	-	harbor#1449 (D-54 domain abbreviation)	-	-	Registered industry abbreviation: foreign exchange
+mta	abbreviation	mta	-	-	experimental	-	harbor#1449 (D-54 domain abbreviation)	-	-	Registered industry abbreviation: multi-touch attribution
+seo	abbreviation	seo	-	-	experimental	-	harbor#1449 (D-54 domain abbreviation)	-	-	Registered industry abbreviation: search engine optimization
+utils	abbreviation	utils	-	-	experimental	-	harbor#1449 (D-18 registered list extended)	-	-	Registered abbreviation: utilities (a module of shared helpers)
+num	abbreviation	num	-	-	experimental	-	harbor#1449 (D-18 registered list extended)	-	-	Registered abbreviation: number
 md	extension	md	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
 sh	extension	sh	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)
 mjs	extension	mjs	-	-	stable	-	harbor#950 (standard §6.3)	-	-	Registered extension-chain element (standard §6.3)

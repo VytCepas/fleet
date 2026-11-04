@@ -21,6 +21,10 @@ put each page where its *purpose* fits, not where its topic fits:
 Architectural decisions live in `.agents/docs/adr/` in the repository (not
 part of this site) — use the `add_adr` skill to record one.
 
+Decision records with a box-wide id (`D-<n>` here, `fleet/D-<n>` from any other repo) are the
+files in [`docs/decisions/`](decisions/0001-record-decisions.md); the series starts at D-1.
+The ADRs above predate it and keep their numbers.
+
 > Tip (public repos): [DeepWiki](https://deepwiki.com/) generates free,
 > always-current architecture docs from the repository — link
 > `deepwiki.com/<owner>/<repo>` from your README.

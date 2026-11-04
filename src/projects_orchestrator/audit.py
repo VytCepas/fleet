@@ -17,7 +17,9 @@ from __future__ import annotations
 
 import logging
 import re
+import shutil
 import subprocess
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -39,7 +41,7 @@ class AuditFinding:
     Attributes:
         project: Project name.
         category: Probe name (``config``/``contract``/…/``drift``/``memory``/
-            ``kit``/``freshness``).
+            ``kit``/``verbs``/``freshness``).
         severity: ``ok`` | ``warn`` | ``fail``.
         message: Short human-readable detail.
     """
@@ -217,6 +219,111 @@ def _kit_finding(descriptor: ProjectDescriptor) -> AuditFinding:
     )
 
 
+_VERBS_ID = "check.repo-verbs"
+_VERB_RE = re.compile(
+    r"\[name\.repo-verb\] repo-verb:([a-z][a-z0-9-]*)|^A\tname\.repo-verb\trepo-verb:([a-z][a-z0-9-]*)",
+    re.MULTILINE,
+)
+
+
+def _run_verbs_lint(tool: Path, root: Path) -> subprocess.CompletedProcess[str]:
+    """Run the project's vendored ``lint-name.sh --check repo-kind`` over it, its ``naming-exemptions.tsv`` rows applied.
+
+    The rows are appended to a temporary copy of the vendored registry's ``exemptions.tsv`` and nothing else, as the project's
+    own ``gates/naming-check.sh`` does, so a ``name.repo-verb`` row there (subject ``repo-verb:<id>``) silences that verb.
+    """
+    argv = ["sh", str(tool), "--check", "repo-kind", str(root.resolve()), "--format", "findings"]
+    registry = tool.parent / "registry"
+    try:
+        rows = [
+            ln
+            for ln in (root / "naming-exemptions.tsv").read_text(encoding="utf-8").splitlines()
+            if ln.strip() and not ln.startswith(("#", "id\t"))
+        ]
+    except OSError:
+        rows = []  # expected: a project without a naming-exemptions.tsv exempts nothing
+    with tempfile.TemporaryDirectory(prefix="verbs-") as tmp:
+        if rows and registry.is_dir():
+            copy = Path(tmp) / "naming"
+            shutil.copytree(registry, copy)
+            with (copy / "exemptions.tsv").open("a", encoding="utf-8") as fh:
+                fh.write("\n".join(rows) + "\n")
+            argv += ["--registry", str(copy)]
+        return subprocess.run(  # noqa: S603 — argv list, no shell; the tool is the project's own vendored copy
+            argv, capture_output=True, text=True, timeout=_KIT_TIMEOUT, check=False
+        )
+
+
+def _verbs_finding(descriptor: ProjectDescriptor) -> AuditFinding:
+    """Hold the project's justfile to the task verbs its repo-kind requires (``check.repo-verbs``, standard#1428; never raises).
+
+    The kind is the project's ``repo-kind:`` line; the verbs are the standard's ``verbs.tsv``, read by the project's vendored
+    ``lint-name.sh --check repo-kind`` as ``name.repo-verb`` findings (a ``naming-exemptions.tsv`` row silences one).
+    A scaffolder carries that package under ``templates/base/vendor/naming`` for the repos it scaffolds, so it is judged by its
+    own copy. Fleet reimplements nothing: no declared kind is not judged; a declared kind with no lint is a finding.
+    """
+    root = descriptor.path
+    name = descriptor.name
+    text = ""
+    for layout in (".agents", ".claude"):
+        try:
+            text = (root / layout / "config.yaml").read_text(encoding="utf-8")
+            break
+        except OSError:
+            continue  # expected: a scaffold has one layout dir, so the other one is absent
+    else:
+        return AuditFinding(
+            name, "verbs", OK, f"{_VERBS_ID}: no config.yaml, the verbs are not judged"
+        )
+    match = re.search(r"^repo-kind:[ \t]*[\"']?([A-Za-z0-9._-]+)", text, re.MULTILINE)
+    if match is None:
+        return AuditFinding(
+            name, "verbs", OK, f"{_VERBS_ID}: declares no repo-kind, the verbs are not judged"
+        )
+    kind = match.group(1)
+    tool = next(
+        (
+            root / rel
+            for rel in ("vendor/naming/lint-name.sh", "templates/base/vendor/naming/lint-name.sh")
+            if (root / rel).is_file()
+        ),
+        None,
+    )
+    if tool is None:
+        return AuditFinding(
+            name,
+            "verbs",
+            WARN,
+            f"{_VERBS_ID}: declares repo-kind {kind} but vendors no lint-name.sh to judge its verbs",
+        )
+    try:
+        proc = _run_verbs_lint(tool, root)
+    except (OSError, subprocess.SubprocessError) as exc:
+        _log.debug("verbs check failed for %s: %s", name, exc)
+        return AuditFinding(
+            name, "verbs", WARN, f"{_VERBS_ID}: the verbs check could not run: {exc}"
+        )
+    if proc.returncode not in (0, 1):
+        return AuditFinding(
+            name,
+            "verbs",
+            WARN,
+            f"{_VERBS_ID}: the lint exited {proc.returncode}: unchecked, not a pass",
+        )
+    missing = sorted({a or b for a, b in _VERB_RE.findall(proc.stdout + proc.stderr)})
+    if not missing:
+        return AuditFinding(
+            name, "verbs", OK, f"{_VERBS_ID}: carries every verb its kind {kind} lists"
+        )
+    more = f" (+{len(missing) - 5} more)" if len(missing) > 5 else ""
+    return AuditFinding(
+        name,
+        "verbs",
+        WARN,
+        f"{_VERBS_ID}: as {kind} lacks the verb(s) " + ", ".join(missing[:5]) + more,
+    )
+
+
 def audit_project(
     descriptor: ProjectDescriptor, cached: dict[str, CheckResult] | None = None
 ) -> AuditReport:
@@ -235,6 +342,7 @@ def audit_project(
         findings.append(drift)
     findings.extend(_memory_findings(descriptor))
     findings.append(_kit_finding(descriptor))
+    findings.append(_verbs_finding(descriptor))
     findings.append(_freshness_finding(descriptor.name, cached))
     return AuditReport(project=descriptor.name, findings=tuple(findings))
 

@@ -11,8 +11,8 @@ Agent-neutral infrastructure lives under [`.agents/`](.agents/) — the
 directory name is historical; the contents (bash lifecycle scripts, markdown
 skills, memory, and docs) are readable by any agent. Harness-specific wiring is
 *not* kept here: each surface you enable with `--agents` gets its own generated
-config in its own directory (`.codex/`, `.agents/`, `.cursor/`, `.amp/`,
-`.junie/`, `.vscode/`, plus root `.mcp.json`). Within `.agents/`, only Claude
+config in its own directory (`.codex/`, `.agents/`, `example:.cursor/`, `example:.amp/`,
+`example:.junie/`, `.vscode/`, plus root `.mcp.json`). Within `.agents/`, only Claude
 Code's own hook configuration is Claude-specific (see "Claude Code specifics"
 below); everything else is reusable by any agent.
 

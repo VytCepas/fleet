@@ -488,7 +488,7 @@ HEAL_MODES = ("fix", "notify")
 # Detect-and-defer boundary values, frozen in the marker contract and mirrored
 # by project-init's descriptor schema enum (marker contract case H1).
 CONTEXT_VALUES = ("repo", "ambient")
-#: The standard's spelling of the same declaration (D-12): ``scope: project`` is ``repo``, ``scope: user`` is ``ambient``.
+#: The standard's spelling of the same declaration (the standard's decision 12): ``scope: project`` is ``repo``, ``scope: user`` is ``ambient``.
 SCOPE_VALUES = {"project": "repo", "user": "ambient"}
 
 
@@ -558,7 +558,7 @@ def _read_marker_key(
 def _extract_context(raw: dict[str, Any], warnings: list[str]) -> str:
     """Parse the top-level boundary marker, either spelling; ``""`` when absent.
 
-    The standard's key is ``scope: project|user`` (D-12); ``context: repo|ambient``
+    The standard's key is ``scope: project|user`` (the standard's decision 12); ``context: repo|ambient``
     is the legacy spelling and is still read (#966, #963). They map
     ``project`` = ``repo`` and ``user`` = ``ambient``, and EITHER key opting out
     decides ``ambient``: a config carrying ``context: repo`` beside ``scope: user``

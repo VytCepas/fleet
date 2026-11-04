@@ -29,7 +29,7 @@
 id	term	kind	surfaces	remove_by	note
 harbor	platform	codename	repo,brand,cli,launchd,systemd,env-prefix,glossary,readme-heading	never	the brand and the control plane's repo name
 yard	scaffolder	codename	repo,brand,cli,env-prefix,glossary,readme-heading	never	repo renamed from project-init (§11 step 7)
-ship	deploy	codename	path,env,check-id,command,glossary,registry,record,memory-prose	never	the ship contract's unattended merge and deploy (v1.1 §5a.8): .agents/ship.conf, SHIP_*, check id ship, harbor ship. Was a legacy alias of workload (D-6), and is still never a repo's name
+ship	deploy	codename	path,env,check-id,command,glossary,registry,record,memory-prose	never	the ship contract's unattended merge and deploy (v1.1 §5a.8): .agents/ship.config, SHIP_*, check id ship, harbor ship. Was a legacy alias of workload (D-6), and is still never a repo's name
 orchestrator	fleet-controller	legacy	glossary,registry,record,memory-prose	2026-11-15	§1.2
 projects-orchestrator	fleet-controller	legacy	glossary,registry,record,memory-prose	2026-11-15	repo renamed fleet (§11 step 7)
 project-init	scaffolder	legacy	glossary,registry,record,memory-prose	2026-11-15	repo renamed yard (§11 step 7)
@@ -45,10 +45,8 @@ msg	message	abbreviation	glossary	-	D-18
 vocab	vocabulary	abbreviation	glossary	-	D-18
 creds	credential	abbreviation	glossary	-	D-18
 equiv	equivalence	abbreviation	glossary	-	D-18
-fx	fixture	abbreviation	glossary	-	D-18
 tmp	temporary	abbreviation	glossary	-	D-18
 util	utility	abbreviation	glossary	-	D-18
-utils	utility	abbreviation	glossary	-	D-18
 mgr	manager	abbreviation	glossary	-	D-18
 impl	implementation	abbreviation	glossary	-	D-18
 cmd	command	abbreviation	glossary	-	D-18
@@ -59,12 +57,10 @@ params	parameter	abbreviation	glossary	-	D-18
 err	error	abbreviation	glossary	-	D-18
 req	request	abbreviation	glossary	-	D-18
 resp	response	abbreviation	glossary	-	D-18
-num	number	abbreviation	glossary	-	D-18
 cnt	count	abbreviation	glossary	-	D-18
 idx	index	abbreviation	glossary	-	D-18
 pkg	package	abbreviation	glossary	-	D-18
 wf	workflow	abbreviation	glossary	-	D-18
-adr	decision-record	abbreviation	glossary	-	D-18: decision record
 behaviour	behavior	spelling	-	never	D-16
 cancelled	canceled	spelling	-	never	D-16
 artefact	artifact	spelling	-	never	D-16
