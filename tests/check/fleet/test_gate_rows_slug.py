@@ -2,7 +2,7 @@
 
 `.agents/ship.conf` names the repo and `.agents/required-checks.tsv` carries one row per
 required check, keyed `<owner>/<repo>`. The gate matches a PR's repo against that column
-exactly, so after a repo rename a stale slug means "harbor lists no required check for
+exactly, so after a repo rename a stale slug means "the gate lists no required check for
 this repo" and only branch protection can gate. Both files must name the slug the
 checkout's origin names.
 """
