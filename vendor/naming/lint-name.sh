@@ -15,6 +15,11 @@
 #   sh bin/lint-name.sh --self-test               every fail fixture goes red, every pass stays green, every rule
 #                                                 goes red on every surface controls.tsv declares for it, and every
 #                                                 grammar surface's example survives parse then render unchanged
+#     --rule <id>                                 (repeatable) limit it to those rules: their fail fixtures, the pass fixtures
+#                                                 of the surfaces they declare (judged for those rules only) and their
+#                                                 coverage, not the other rules, the examples or the full census (harbor#667).
+#                                                 Still runs the grammar, register and validator checks. Not a gate: the
+#                                                 full self-test stays the default and the one a tree is judged by
 #   sh bin/lint-name.sh --render <surface> k=v..  a tuple rendered by surfaces.tsv's grammar, e.g.
 #                                                 --render bin family=admission object=bash ext=sh
 #   sh bin/lint-name.sh --parse <surface> <name>  a name parsed back into its slots, one k=v per line
@@ -65,6 +70,7 @@ log_init lint-name
 usage() { awk 'NR < 2 { next } /^# DELIBERATELY/ || !/^#/ { exit } { sub(/^# ?/, ""); print }' "$SELF"; }
 
 ACTION=tree; FORMAT=""; ROOT=""; REG=""; BASE="${HARBOR_CI_BASE:-origin/main}"; TODAY=""; EXBASE=""
+RULES=""      # --rule ids, space-terminated; empty = the full self-test
 UNCHECKED=3   # D-49: pass 0, fail 1, usage 2, unchecked 3
 SURFACE=""; NAME=""; VIEW=""; SLOTS=""
 while [ $# -gt 0 ]; do
@@ -73,6 +79,8 @@ while [ $# -gt 0 ]; do
     --changed) ACTION=changed ;;
     --added) ACTION=added ;;
     --self-test) ACTION=self-test ;;
+    --rule) [ $# -ge 2 ] || { log_fail "--rule needs a rule id"; log_fix "sh $SELF --self-test --rule name.case"; log_end || :; exit 2; }
+            RULES="$RULES$2 "; shift ;;
     --list) ACTION=list ;;
     --check) ACTION=check
              [ $# -ge 3 ] || { log_fail "--check needs <surface> <name>"; log_fix "sh $SELF --check path docs/reports/2026-10-03-review.md"; log_end || :; exit 2; }
@@ -103,6 +111,8 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
+
+[ -z "$RULES" ] || [ "$ACTION" = self-test ] || { log_fail "--rule only limits --self-test"; log_fix "sh $SELF --self-test --rule name.case"; log_end || :; exit 2; }
 
 # A vendored copy (vendor/naming/, MANIFEST.tsv beside it) judges the repo that carries it, with the registry beside it
 # (harbor#967, #1415): bare, it finds both; harbor's own bin/ has neither file, so its defaults are unchanged.
@@ -1534,6 +1544,17 @@ one() { # <surface> <name> -> the red log of one --check, in $T/red
   return 0
 }
 log_head "self-test: fixtures/naming"
+# --rule: the rules the run is limited to, and the surfaces they declare (their pass fixtures are judged for them alone).
+if [ -n "$RULES" ]; then
+  awk -F'\t' '/^#/ || !H[FILENAME]++ { next } $3 == "lint" && $4 == "bin/lint-name.sh" { print $1 }' "$(reg_file controls.tsv)" > "$T/rules0"
+  for _r in $RULES; do
+    grep -qx -- "$_r" "$T/rules0" || { log_fail "--rule $_r is not a lint-name rule in controls.tsv"; log_fix "sh $SELF --list"; log_end || :; exit 2; }
+  done
+  awk -F'\t' -v sel=" $RULES" '/^#/ || !H[FILENAME]++ { next } index(sel, " " $1 " ") && $5 != "-" { n = split($5, S, ","); for (i = 1; i <= n; i++) print S[i] }' \
+    "$(reg_file controls.tsv)" | sort -u > "$T/selsurf"
+  log_note "limited to --rule ${RULES% }: the other rules, the examples and the pass fixtures of other surfaces are not judged"
+fi
+reds() { if [ -n "$RULES" ]; then awk -v r=" $RULES" 'index(r, " " $0 " ")' "$T/red"; else cat "$T/red"; fi; }
 find "$FX" -mindepth 3 -maxdepth 3 -name expect.tsv | sort > "$T/expects"
 [ -s "$T/expects" ] || { log_fail "no fixtures/naming/<surface>/{pass,fail}/expect.tsv — nothing to judge"; log_fix "ls $FX"; log_end || :; exit "$UNCHECKED"; }
 while IFS= read -r _e; do
@@ -1542,13 +1563,19 @@ while IFS= read -r _e; do
   while IFS='	' read -r _nm _want _rest; do
     case "$_nm" in ''|'#'*|name) continue ;; esac
     _rows=$((_rows + 1))
+    if [ -n "$RULES" ]; then
+      if [ "$_side" = fail ]; then
+        _want="$(printf '%s' "$_want" | tr ',' '\n' | awk -v r=" $RULES" 'index(r, " " $0 " ")' | tr '\n' ',')"; _want="${_want%,}"
+        [ -n "$_want" ] || continue
+      else grep -qx -- "$_sf" "$T/selsurf" || continue; fi
+    fi
     one "$_sf" "$_nm" || continue
     if [ "$_side" = fail ]; then
       for _w in $(printf '%s' "$_want" | tr ',' ' '); do
         if grep -qx -- "$_w" "$T/red"; then log_ok "$_sf/fail: $_nm went red on $_w"
         else log_fail "$_sf/fail: $_nm did not go red on $_w (red: $(tr '\n' ' ' < "$T/red"))"; log_fix "sh $SELF --check $_sf '$_nm'"; fi
       done
-    elif [ -s "$T/red" ]; then log_fail "$_sf/pass: $_nm went red on $(tr '\n' ' ' < "$T/red")"; log_fix "sh $SELF --check $_sf '$_nm'"
+    elif [ -n "$(reds)" ]; then log_fail "$_sf/pass: $_nm went red on $(tr '\n' ' ' < "$T/red")"; log_fix "sh $SELF --check $_sf '$_nm'"
     else log_ok "$_sf/pass: $_nm stays green"; fi
   done < "$_e"
   [ "$_rows" -gt 0 ] || { log_fail "${_e#"$ROOT"/} holds no row"; log_fix "add a row: <name> TAB <rule>"; }
@@ -1560,6 +1587,7 @@ awk -F'\t' '/^#/ || !H[FILENAME]++ { next } ($4 == "tree" || $4 == "check") && $
 [ ! -f "$ROOT/standards/naming.md" ] || awk -F'\t' 'NR == FNR { if ($0 !~ /^#/ && H[FILENAME]++ && ($4 == "tree" || $4 == "check")) s[$1] = 1; next }
   /^ *\| `[a-z-]+` \| `[^`]+`/ { n = split($0, c, "|"); a = c[2]; gsub(/[ `]/, "", a); b = c[3]; sub(/^[^`]*`/, "", b); sub(/`.*$/, "", b); if (a in s) print a "\t" b }' \
   "$(reg_file surfaces.tsv)" "$ROOT/standards/naming.md" >> "$T/doc"
+[ -z "$RULES" ] || : > "$T/doc"   # the examples are the whole tree's, not a rule's
 while IFS='	' read -r _sf _nm; do
   one "$_sf" "$_nm" || continue
   if [ -s "$T/red" ]; then log_fail "example $_sf $_nm went red on $(tr '\n' ' ' < "$T/red")"; log_fix "fix the example or the rule: sh $SELF --check $_sf '$_nm'"
@@ -1596,21 +1624,23 @@ fi
 # went red, harbor#950), so a renderer could stop judging four surfaces and nothing noticed.
 LC_ALL=C sort -u "$T/allred" -o "$T/allred"
 # The rules are the controls this lint evaluates: type lint, engine bin/lint-name.sh. Planned ones (engine -) wait for their evaluator.
-awk -F'\t' '/^#/ || !H[FILENAME]++ { next } $3 == "lint" && $4 == "bin/lint-name.sh" { print $1 }' "$(reg_file controls.tsv)" | LC_ALL=C sort -u > "$T/rules"
-awk -F'\t' '/^#/ || !H[FILENAME]++ { next } $3 == "lint" && $4 == "bin/lint-name.sh" && $5 != "-" { n = split($5, S, ","); for (i = 1; i <= n; i++) print S[i] "\t" $1 }' "$(reg_file controls.tsv)" \
+awk -F'\t' -v sel=" $RULES" '/^#/ || !H[FILENAME]++ { next } $3 == "lint" && $4 == "bin/lint-name.sh" && (sel == " " || index(sel, " " $1 " ")) { print $1 }' "$(reg_file controls.tsv)" | LC_ALL=C sort -u > "$T/rules"
+awk -F'\t' -v sel=" $RULES" '/^#/ || !H[FILENAME]++ { next } $3 == "lint" && $4 == "bin/lint-name.sh" && $5 != "-" && (sel == " " || index(sel, " " $1 " ")) { n = split($5, S, ","); for (i = 1; i <= n; i++) print S[i] "\t" $1 }' "$(reg_file controls.tsv)" \
   | LC_ALL=C sort -u > "$T/pairs"
 cut -f2 "$T/allred" | LC_ALL=C sort -u | comm -23 "$T/rules" - > "$T/never"
 LC_ALL=C comm -23 "$T/pairs" "$T/allred" | awk -F'\t' '{ printf "%s on %s\n", $2, $1 }' > "$T/nopair"
 if [ -s "$T/never" ]; then
   log_fail "never went red in this self-test: $(tr '\n' ' ' < "$T/never")"; log_fix "add a fail fixture under fixtures/naming/<surface>/fail/ for each"
 else
-  log_ok "every rule in controls.tsv went red at least once ($(grep -c . "$T/rules" | tr -d ' ') rules)"
+  if [ -n "$RULES" ]; then log_ok "every selected rule went red at least once ($(grep -c . "$T/rules" | tr -d ' ') rules; limited to --rule)"
+  else log_ok "every rule in controls.tsv went red at least once ($(grep -c . "$T/rules" | tr -d ' ') rules)"; fi
 fi
 if [ -s "$T/nopair" ]; then
   log_fail "a declared surface never went red: $(awk '{ printf "%s%s", (NR > 1 ? ", " : ""), $0 }' "$T/nopair")"
   log_fix "add a fail fixture under fixtures/naming/<surface>/fail/, or drop the surface from the rule's controls.tsv row"
 else
-  log_ok "every rule went red on every surface it declares ($(grep -c . "$T/pairs" | tr -d ' ') rule×surface pairs)"
+  if [ -n "$RULES" ]; then log_ok "every selected rule went red on every surface it declares ($(grep -c . "$T/pairs" | tr -d ' ') rule×surface pairs; limited to --rule)"
+  else log_ok "every rule went red on every surface it declares ($(grep -c . "$T/pairs" | tr -d ' ') rule×surface pairs)"; fi
 fi
 
 # The validators (harbor#1259). The derivation runs into $T, so this never reads the box; the file a consumer reads is

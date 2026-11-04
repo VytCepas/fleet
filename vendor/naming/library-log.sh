@@ -180,7 +180,7 @@ log_receipt() {
 #   2. <dir> is an install: <dir>/repo-slug.txt, which runtime-install ships from contracts/repo-slug.txt.
 # NOTHING ELSE IS READ: not the environment, not the registered ~/port checkout, not the private layer. A session can write
 # all three, and lint-findings-run.sh fetches and runs what this names with the operator's gh login (review #895): a name a
-# session could redirect would be a fetch it could redirect. A tool's own override variable (HARBOR_PLAN_REPO, ...) is its
+# session could redirect would be a fetch it could redirect. A tool's own override variable (HARBOR_CI_PLAN_REPO, ...) is its
 # caller's decision, taken before it asks here.
 slug_of_url() { # <url> — what the bootstrap installer and repo_slug share: the three spellings a clone is given, else nothing
   case "${1-}" in
