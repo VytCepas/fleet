@@ -48,7 +48,7 @@ def test_tracked_lists_the_checkout_from_inside_an_untracked_copy(tmp_path):
 
 
 def test_manifest_is_merge_only():
-    assert gen.manifest_value(_ROOT, "repo") == "VytCepas/projects-orchestrator"
+    assert gen.manifest_value(_ROOT, "repo") == "VytCepas/fleet"
     assert (_ROOT / ".github" / "workflows" / gen.manifest_value(_ROOT, "workflow")).is_file()
     for key in ("plan", "apply", "verify", "restore", "deployed"):
         assert gen.manifest_value(_ROOT, key) == "", f"merge-only manifest carries {key}"
@@ -67,8 +67,8 @@ def test_required_checks_name_this_repo():
         for line in (_ROOT / ".agents" / "required-checks.tsv").read_text().splitlines()
         if line.strip() and not line.startswith("#")
     ]
-    assert rows and all(len(r) == 2 and r[0] == "VytCepas/projects-orchestrator" for r in rows)
-    assert ["VytCepas/projects-orchestrator", "CI gate"] in rows
+    assert rows and all(len(r) == 2 and r[0] == "VytCepas/fleet" for r in rows)
+    assert ["VytCepas/fleet", "CI gate"] in rows
 
 
 def test_codeowners_is_current():
