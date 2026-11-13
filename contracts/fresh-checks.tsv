@@ -10,6 +10,6 @@
 # .claude/CAPABILITIES.md (written by project-init on scaffold and upgrade), .agents/.upgrade-base.json and
 # .claude/.upgrade-base.json (JSON has no comment syntax), the .claude/ mirror of .agents/ (byte copies written by
 # project-init). The vendored contract snapshot under fixtures/ is checked by `just contract-freshness`.
-.agents/docs/CODE_MAP.md	uv run python .agents/scripts/gen_code_map.py --check	just code-map	
+.agents/docs/code-map.md	uv run python .agents/scripts/generate-code-map.py --check	just code-map	
 .github/CODEOWNERS	uv run python .agents/scripts/gen_codeowners.py --check	uv run python .agents/scripts/gen_codeowners.py --write	
 vendor/naming/MANIFEST.tsv	sh vendor/naming/standard-vendor.sh --check --offline .	sh <standard checkout>/bin/standard-vendor.sh .	

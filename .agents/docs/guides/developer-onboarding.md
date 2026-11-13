@@ -6,7 +6,7 @@ personal, not repository state, so they are documented here instead of being
 scaffolded (see the project-init decision in PI-140).
 
 Everything repo-level (linting, commands, env examples) ships with the
-repository. The one per-clone step: run `.agents/scripts/install_hooks.sh`
+repository. The one per-clone step: run `.agents/scripts/install-hooks.sh`
 once to activate the `pre-commit` (gitleaks secret scan), `commit-msg`,
 and `pre-push` git hooks — git does not enable repository hooks
 automatically. Install [gitleaks](https://github.com/gitleaks/gitleaks#installing)
@@ -91,7 +91,7 @@ git config --global commit.gpgsign true
 - [ ] Global gitignore configured
 - [ ] Global git config applied (rebase pulls, pruning, identity)
 - [ ] Commit signing set up, if required
-- [ ] Repo hooks installed: run `.agents/scripts/install_hooks.sh` once per clone
+- [ ] Repo hooks installed: run `.agents/scripts/install-hooks.sh` once per clone
 - [ ] gitleaks installed for the local pre-commit secret scan
 
 ## Multi-agent support tiers
@@ -101,7 +101,7 @@ best-effort. If the project was scaffolded with extra agents (`--agents`):
 
 | Agent | What you get | Setup per clone |
 |---|---|---|
-| Claude Code | full tier: hooks, skills, settings | none (plus `install_hooks.sh` like everyone) |
+| Claude Code | full tier: hooks, skills, settings | none (plus `install-hooks.sh` like everyone) |
 | Codex | shared skills at `.agents/skills/`, command guard wired via `.codex/hooks.json` (advisory; some Codex versions gate project hooks behind a one-time trust/enable step) | none |
 | Antigravity (`agy`) | skills at `.agents/skills/`, command guard via `.agents/hooks.json` (experimental), MCP via `.agents/mcp_config.json` | none (`.agents/` is auto-discovered) |
 | Ollama-based (Aider, Goose, …) | AGENTS.md instructions, portable scripts, markdown memory | none |

@@ -18,8 +18,8 @@ put each page where its *purpose* fits, not where its topic fits:
 | [Reference](reference/index.md) | Looking up facts (API, config) | working, needs precision |
 | [Explanation](explanation/index.md) | Understanding why | studying, wants context |
 
-Architectural decisions live in `.agents/docs/adr/` in the repository (not
-part of this site) — use the `add_adr` skill to record one.
+Architectural decisions live in `.agents/docs/decisions/` in the repository (not
+part of this site) — use the `add-decision-record` skill to record one.
 
 Decision records with a box-wide id (`D-<n>` here, `fleet/D-<n>` from any other repo) are the
 files in [`docs/decisions/`](decisions/0001-record-decisions.md); the series starts at D-1.

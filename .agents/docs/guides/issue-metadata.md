@@ -12,7 +12,7 @@ Use labels for values that workflows and project boards can read.
 - Scale labels: `scale:epic` (a large parent initiative) or `scale:task` (a focused leaf — the default). Keep an epic's child tickets `scale:task` and sized `S`/`M`, so PRs and agent context stay small.
 - Area labels (`area:<slug>`) are derived automatically: the issue-validation workflow reads the body's `Area` field and applies an `area:<slug>` label (comma-separated areas each get one, e.g. `Area: ci, templates` → `area:ci` + `area:templates`), creating the label if missing. So set the `Area` field rather than hand-crafting the label — that keeps the subsystem facet consistent for click-to-filter. Reuse an existing area slug when one fits instead of coining a near-duplicate.
 
-`create_issue.sh` creates missing priority, size, and scale labels when the token has permission. If label creation fails, the issue is still created and the value remains in the markdown body.
+`create-issue.sh` creates missing priority, size, and scale labels when the token has permission. If label creation fails, the issue is still created and the value remains in the markdown body.
 
 ## Markdown body
 

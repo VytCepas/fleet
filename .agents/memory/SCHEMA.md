@@ -1,6 +1,6 @@
 # Memory Schema
 
-Authoritative governance for `.claude/memory/` files. `lint_memory.sh` enforces these rules.
+Authoritative governance for `.claude/memory/` files. `lint-memory.sh` enforces these rules.
 
 ## Required frontmatter
 
@@ -37,7 +37,7 @@ Every memory file must appear in `MEMORY.md` as a one-line bullet:
 - [Title](filename.md) — short description
 ```
 
-Keep lines under ~150 characters. `lint_memory.sh` checks for orphaned files and stale index entries.
+Keep lines under ~150 characters. `lint-memory.sh` checks for orphaned files and stale index entries.
 
 ## What NOT to store
 

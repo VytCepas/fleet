@@ -11,9 +11,9 @@ All hooks fire automatically — do not invoke them manually in normal flow.
 | Hook | Event | Trigger |
 |---|---|---|
 | `github_command_guard.sh` | PreToolUse | Bash — steers agents toward lifecycle scripts |
-| `pre_commit_gate.sh` | PreToolUse | Bash containing `git commit` |
-| `post_edit_lint.sh` | PostToolUse | Edit / Write / MultiEdit |
-| `workflow_state_reminder.sh` | UserPromptSubmit | injects workflow lifecycle context |
+| `pre-commit-gate.sh` | PreToolUse | Bash containing `git commit` |
+| `post-edit-lint.sh` | PostToolUse | Edit / Write / MultiEdit |
+| `workflow-state-reminder.sh` | UserPromptSubmit | injects workflow lifecycle context |
 
 Security enforcement is agent-agnostic (ADR-007), not a Claude hook:
 secret scanning runs as a git pre-commit hook (gitleaks) plus a CI
@@ -27,4 +27,4 @@ just lint                                # the same gate the hooks enforce
 # (with --no-plugin scaffolds the hook scripts live in .agents/hooks/)
 ```
 
-Do not read hook scripts to understand their logic — descriptions above are sufficient. Only open a hook file if you are modifying it. To add a new hook, run the `add_hook` skill.
+Do not read hook scripts to understand their logic — descriptions above are sufficient. Only open a hook file if you are modifying it. To add a new hook, run the `add-hook` skill.

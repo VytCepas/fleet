@@ -25,4 +25,4 @@ When compacting this conversation, preserve:
 - Files modified in this session (list by path)
 - Test results: pass/fail count and any failing test names
 - Unresolved errors or lint failures
-- Any decisions made that aren't yet committed to `.agents/docs/adr/`
+- Any decisions made that aren't yet committed to `.agents/docs/decisions/`

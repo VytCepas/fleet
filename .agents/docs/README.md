@@ -13,5 +13,5 @@ docs/
 
 ## How to use
 
-**Agents:** Read `.agents/docs/adr/` before starting tasks. If you establish a new pattern or make a non-obvious decision, write a brief ADR.
+**Agents:** Read `.agents/docs/decisions/` before starting tasks. If you establish a new pattern or make a non-obvious decision, write a brief ADR.
 

@@ -48,4 +48,4 @@ type: user | feedback | project | reference
 If this project was scaffolded with the `obsidian-graphify` preset,
 `.agents/rules/graphify.md` documents the code knowledge graph: query
 `graphify-out/graph.json` before grepping, rebuilt per commit. One-time
-setup: `.agents/scripts/setup_graphify.sh`.
+setup: `.agents/scripts/setup-graphify.sh`.

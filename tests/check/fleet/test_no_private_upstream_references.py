@@ -56,6 +56,12 @@ _SKIP_SUFFIXES = {".pyc", ".png", ".svg", ".ico", ".lock"}
 # held by `just docs-check`, so rewording a line is an edit the gate refuses. Nothing else may name it.
 _VENDORED_PREFIX = "vendor/naming/"
 
+# project-init records each template file's text in `.upgrade-base.json` as its merge base, so those
+# files carry a second verbatim copy of the vendored package, one entry per line keyed by its path.
+# Only an entry keyed under the vendored prefix is exempt; any other line there is scanned.
+_BASE_STORE = ".upgrade-base.json"
+_VENDORED_BASE_KEY = f'"{_VENDORED_PREFIX}'
+
 
 def _shipped() -> set[str]:
     """Every path `pyproject.toml` puts in the wheel, relative to the repo root."""
@@ -130,6 +136,8 @@ def test_nothing_shipped_or_public_names_the_private_upstream(name: str) -> None
         except (UnicodeDecodeError, OSError):
             continue
         for lineno, line in enumerate(text.splitlines(), 1):
+            if path.name == _BASE_STORE and line.lstrip().startswith(_VENDORED_BASE_KEY):
+                continue
             if pattern.search(line):
                 hits.append(f"{path}:{lineno}: {line.strip()[:90]}")
     assert not hits, (

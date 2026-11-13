@@ -2,13 +2,13 @@
 # pre-commit hook (ADR-007). Two gates, fastest-feedback-first:
 #   1. Lint: run `just lint` so a human committing from a terminal/IDE is held
 #      to the SAME static gate CI runs (ruff + shfmt + shellcheck). The Claude
-#      pre_commit_gate.sh only fires for agent-driven commits; this catches
+#      pre-commit-gate.sh only fires for agent-driven commits; this catches
 #      everyone. Fail-CLOSED when the tooling is present (block the commit,
 #      bypassable with `git commit --no-verify`); fail-open when `just`/the
 #      recipe is absent so a fresh clone without the toolchain still commits.
 #   2. Secrets: scan staged changes with gitleaks. Fail-OPEN if gitleaks is
 #      missing — the CI secret-scan job is the hard backstop.
-# Install: .agents/scripts/install_hooks.sh
+# Install: .agents/scripts/install-hooks.sh
 
 set -euo pipefail
 

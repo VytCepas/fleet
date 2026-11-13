@@ -9,7 +9,7 @@ session. It lives here rather than in a sibling hook because it needs the
 identical machinery — the config walk with its symlink refusal, ``safety.allow``,
 the ask/deny-by-mode posture, fail-open — and a second copy of security-critical
 code is the drift this repo keeps finding. Extending this hook also reaches the
-non-Claude surfaces through ``agent_guard_adapter.py`` for free.
+non-Claude surfaces through ``admission_agent_adapter.py`` for free.
 Destructive operations that bypass the git/CI boundary (cloud deletes,
 DROP DATABASE, terraform destroy, …) get:
 
@@ -1837,14 +1837,18 @@ _AUTONOMOUS_MODES = {"bypassPermissions", "dangerouslySkipPermissions"}
 # still wrong: it disables a control the owner declared, on a typo, and the
 # orchestrator's real YAML parser resolves the same line differently, which is
 # precisely the three-readers divergence the shared fixtures exist to prevent.
+#
+# TWO SPELLINGS, ONE OPT-OUT (#963): the standard's key is `scope: user`
+# (D-12) and the legacy `context: ambient` is still read. Either alone opts out.
 _CONTEXT_AMBIENT_RE = re.compile(
-    r"""^["']?context["']?[^\S\n]*:[^\S\n]*["']?ambient["']?(?:[^\S\n]+\#.*)?[^\S\n]*$""",
+    r"""^["']?(?:context["']?[^\S\n]*:[^\S\n]*["']?ambient|scope["']?[^\S\n]*:[^\S\n]*["']?user)"""
+    r"""["']?(?:[^\S\n]+\#.*)?[^\S\n]*$""",
     re.MULTILINE,
 )
 
 
 def _declares_ambient(config: Path) -> bool:
-    """True iff *config* carries a top-level ``context: ambient`` declaration.
+    """True iff *config* carries a top-level ``scope: user`` or ``context: ambient`` declaration.
 
     Unreadable is not ambient: an unreadable config supplies no allowlist
     either, so the guard already keeps guarding, and inventing a verdict from a

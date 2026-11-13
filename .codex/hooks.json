@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh -c 'cd \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)\" && exec .agents/hooks/_py.sh .agents/hooks/agent_guard_adapter.py codex'",
+            "command": "sh -c 'cd \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)\" && exec .agents/hooks/python-resolve.sh .agents/hooks/admission_agent_adapter.py codex'",
             "timeout": 10
           }
         ]

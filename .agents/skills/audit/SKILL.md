@@ -41,7 +41,7 @@ For every file in `.agents/hooks/`:
    - `exit 1` that isn't inside a `trap` or error path before JSON parsing → `[FAIL]`
    - `>&2` used for block output instead of stdout → `[FAIL]`
    - Missing `exit 0` at end of file → `[WARN]`
-3. **JSON parsing** — must use Python via the `_py.sh` resolver (not jq) for portability. `grep -l 'jq ' *.sh` → `[FAIL]`
+3. **JSON parsing** — must use Python via the `python-resolve.sh` resolver (not jq) for portability. `grep -l 'jq ' *.sh` → `[FAIL]`
 4. **Stdin reading** — must read `$CLAUDE_TOOL_USE_STDIN` or stdin JSON. Check the INPUT= line exists.
 5. **Referenced in settings.json** — every hook file should appear in `.agents/settings.json`. Orphaned hooks → `[WARN]`
 
@@ -66,7 +66,7 @@ For every file in `.github/hooks/`:
 For every SKILL.md in `.agents/skills/*/`:
 
 1. **Required frontmatter** — `name` and `description` must exist
-2. **Listed in INDEX.md** — `.agents/skills/INDEX.md` should reference every skill. Missing → `[WARN]`
+2. **Listed in index.md** — `.agents/skills/index.md` should reference every skill. Missing → `[WARN]`
 3. **Listed in project-init.md** — `.agents/project-init.md` Tools table should list it. Missing → `[WARN]`
 
 ### 2.5 Settings.json coherence
@@ -126,7 +126,7 @@ Compile findings into a structured report:
 Create a GitHub issue using the project's lifecycle script:
 
 ```bash
-.agents/scripts/create_issue.sh chore "Project audit findings" \
+.agents/scripts/create-issue.sh chore "Project audit findings" \
   --priority medium \
   --area "tooling" \
   --size M \
@@ -139,9 +139,9 @@ Paste the full report as a comment on the issue.
 
 If `$ARGUMENTS` contains `--fix`:
 
-1. Start work on the issue: `.agents/scripts/start_issue.sh <n> fix`
+1. Start work on the issue: `.agents/scripts/start-issue.sh <n> fix`
 2. Fix all `[FAIL]` items. Review `[WARN]` items and fix where appropriate.
 3. Run lint and tests after fixes.
-4. Push and finish: `.agents/scripts/finish_pr.sh <n>`
+4. Push and finish: `.agents/scripts/finish-pr.sh <n>`
 
 If `--fix` is not specified, stop after Phase 4 and report the issue number.

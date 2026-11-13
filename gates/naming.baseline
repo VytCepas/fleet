@@ -1,0 +1,3 @@
+# naming baseline: findings the tree carried when the naming gate was adopted. rule TAB subject.
+# This file only SHRINKS: a line whose finding no longer occurs turns the gate red until it is
+# deleted; a new finding is fixed, never added here. Seed it once with: sh gates/naming-check.sh --seed

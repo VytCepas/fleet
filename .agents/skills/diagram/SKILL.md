@@ -39,7 +39,7 @@ source is the artifact.
 ## 2. Ground before drawing
 
 - **Code/architecture mode:** derive nodes and edges from reality — read
-  `CODE_MAP.md` (if present), imports, and directory structure. Never invent
+  `code-map.md` (if present), imports, and directory structure. Never invent
   a component; if a box isn't backed by a file/module/service you can name,
   it doesn't go on the diagram.
 - **Label file-backed nodes with their repo-relative path** — a "scaffold
@@ -54,7 +54,7 @@ source is the artifact.
 **Worked grounding pass** (a repo's module layout):
 
 1. Enumerate what actually exists — `ls src/` (or the stack's source root) and
-   read `CODE_MAP.md` if present. Don't guess from memory.
+   read `code-map.md` if present. Don't guess from memory.
 2. Keep ≤25 real nodes; group or drop the rest into an overview diagram.
 3. Every file-backed node carries its path, so each box is checkable:
 
