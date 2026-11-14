@@ -209,13 +209,28 @@ function loadfile(rel, i,   abs, line, nf, f, first, ln, r, c, k, n, a, nm, ragg
   }
 }
 function schemaof(rel,   i) { i = findschema(rel); if (i) loadfile(rel, i); return i }
-function targetset(tf, tc,   tk, lf, i, r, c) {
+# the vendored copy of a standards/naming/<f> register, wherever the repo declares it: a schema row whose id is a glob and whose
+# columns are =standards/naming/<glob> says "this directory is a copy of the standard'"'"'s" (harbor#966); "" when none holds the file
+function vendored(tf,   k, i, tmpl, p, ip, pre, suf, seg, cand) {
+  for (i = 1; i <= NS; i++) {
+    if (substr(SCL[i], 1, 17) != "=standards/naming") continue
+    tmpl = substr(SCL[i], 2); p = index(tmpl, "*"); ip = index(SID[i], "*")
+    if (p == 0 || ip == 0) continue
+    pre = substr(tmpl, 1, p - 1); suf = substr(tmpl, p + 1)
+    if (substr(tf, 1, length(pre)) != pre || length(tf) < length(pre) + length(suf) || substr(tf, length(tf) - length(suf) + 1) != suf) continue
+    seg = substr(tf, length(pre) + 1, length(tf) - length(pre) - length(suf))
+    cand = substr(SID[i], 1, ip - 1) seg substr(SID[i], ip + 1)
+    if (cand in FILES) return cand
+  }
+  return ""
+}
+function targetset(tf, tc,   tk, lf, i, r, c, v) {
   tk = tf SUBSEP tc
   if (tk in TOK) return TOK[tk]
   TOK[tk] = 0
   # a workload holds the standard'"'"'s registers only as the vendored copy (standard-vendor.sh), so standards/naming/<f> is read there; absent in both is still red
   lf = tf
-  if (!(lf in FILES) && substr(lf, 1, 16) == "standards/naming" && ("vendor/naming/registry/" substr(lf, 18)) in FILES) lf = "vendor/naming/registry/" substr(lf, 18)
+  if (!(lf in FILES)) { v = vendored(tf); if (v != "") lf = v }
   if (!(lf in FILES)) { fnd("standard.reference-resolves", "target:" tf, "the target register " tf " is not in the tree"); return 0 }
   i = schemaof(lf)
   if (!i) { fnd("standard.reference-resolves", "target:" tf, "the target register " tf " has no schema row"); return 0 }

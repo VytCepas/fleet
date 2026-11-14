@@ -13,14 +13,14 @@ Subcommands:
                         verification (handles transient GitHub 5xx).
   promote [<pr>]        mark current (or numbered) draft PR ready for review.
   finish [<pr>] [--review-cycle N]
-                        push, promote, then exec monitor_pr.sh --merge.
+                        push, promote, then exec watch-pr.sh --merge.
   create-pr-nojira <type> <title> [--branch B] [--base B]
                         create a no-issue feature branch + draft PR.
 
 The `check` and `guard` paths are pure read-only; they're used by hooks and
 lifecycle scripts. The other subcommands consolidate the bash lifecycle
-scripts (push_branch.sh, promote_review.sh, finish_pr.sh,
-create_nojira_pr.sh) so the tool is the single source of truth for the
+scripts (push-branch.sh, promote-review.sh, finish-pr.sh,
+create-pr-without-issue.sh) so the tool is the single source of truth for the
 GitHub workflow. The .sh files become thin shims that exec into here.
 
 Issue-ref prefix detection:
@@ -257,8 +257,8 @@ def prereqs_satisfied(node: str, _seen: set[str] | None = None) -> tuple[bool, s
 # Steering rules: command pattern -> (target_node | None, redirect_message)
 # The first matching rule wins. target_node=None means a hard block with no
 # DAG validation; otherwise, prereqs of target_node are appended to the reason.
-# PI-845: create_issue.sh only files issues in THIS project, so the rule below
-# must not dead-end the report_upstream_issue skill — `gh issue create` with an
+# PI-845: create-issue.sh only files issues in THIS project, so the rule below
+# must not dead-end the report-upstream-issue skill — `gh issue create` with an
 # explicit -R/--repo naming a DIFFERENT repo has no wrapper equivalent and is
 # allowed through (guard() checks _is_upstream_issue_create first).
 _ISSUE_CREATE_RE = re.compile(r"\bgh\s+issue\s+create\b")
@@ -307,7 +307,7 @@ def _is_upstream_issue_create(cmd: str) -> bool:
     flag_slug = "/".join(parts[-2:])
     origin = _origin_host_slug()
     # Unknown origin: an explicit -R is still not this project's issue tracker
-    # (create_issue.sh needs origin to work at all) — allow rather than dead-end.
+    # (create-issue.sh needs origin to work at all) — allow rather than dead-end.
     if origin is None:
         return True
     origin_host, origin_slug = origin
@@ -331,7 +331,7 @@ COMMAND_RULES: list[tuple[re.Pattern[str], str | None, str]] = [
         # merge slip past the guard — only `;`/`&` end the command segment (PI-198).
         re.compile(r"\bgh\s+api\b[^&;]*?repos/[^/\s]+/[^/\s]+/pulls/\d+/merge\b"),
         "pr.merged",
-        "Use .agents/scripts/monitor_pr.sh <pr> --merge instead of `gh api .../merge` so CI and review gates are honored.",
+        "Use .agents/scripts/watch-pr.sh <pr> --merge instead of `gh api .../merge` so CI and review gates are honored.",
     ),
     (
         # GraphQL merges bypass the REST-path rule above (2026-07 review): a
@@ -342,37 +342,37 @@ COMMAND_RULES: list[tuple[re.Pattern[str], str | None, str]] = [
             r"(?:mergePullRequest|enablePullRequestAutoMerge)"
         ),
         "pr.merged",
-        "Use .agents/scripts/monitor_pr.sh <pr> --merge instead of a `gh api graphql` merge mutation so CI and review gates are honored.",
+        "Use .agents/scripts/watch-pr.sh <pr> --merge instead of a `gh api graphql` merge mutation so CI and review gates are honored.",
     ),
     (
         re.compile(r"\bgh\s+pr\s+merge\b"),
         "pr.merged",
-        "Use .agents/scripts/monitor_pr.sh <pr> --merge instead of `gh pr merge` so CI, review waits, and review cycles are handled.",
+        "Use .agents/scripts/watch-pr.sh <pr> --merge instead of `gh pr merge` so CI, review waits, and review cycles are handled.",
     ),
     (
         re.compile(r"\bgh\s+pr\s+checks\b.*--watch"),
         None,
-        "Use .agents/scripts/monitor_pr.sh <pr> --merge instead of `gh pr checks --watch`.",
+        "Use .agents/scripts/watch-pr.sh <pr> --merge instead of `gh pr checks --watch`.",
     ),
     (
         re.compile(r"\bgh\s+pr\s+ready\b"),
         "pr.opened",
-        "Use .agents/scripts/promote_review.sh instead of `gh pr ready`.",
+        "Use .agents/scripts/promote-review.sh instead of `gh pr ready`.",
     ),
     (
         re.compile(r"\bgh\s+pr\s+create\b"),
         "pr.opened",
-        "Use .agents/scripts/start_issue.sh (issue-backed) or .agents/scripts/create_nojira_pr.sh (no issue) instead of `gh pr create`.",
+        "Use .agents/scripts/start-issue.sh (issue-backed) or .agents/scripts/create-pr-without-issue.sh (no issue) instead of `gh pr create`.",
     ),
     (
         _ISSUE_CREATE_RE,
         None,
-        "Use .agents/scripts/create_issue.sh (or the start_task skill) so priority, references, and acceptance criteria are captured. Filing in ANOTHER repo (report_upstream_issue) is allowed with an explicit -R/--repo naming that repo.",
+        "Use .agents/scripts/create-issue.sh (or the start-task skill) so priority, references, and acceptance criteria are captured. Filing in ANOTHER repo (report-upstream-issue) is allowed with an explicit -R/--repo naming that repo.",
     ),
     (
         re.compile(r"\bgit\s+push\b"),
         "branch.pushed",
-        "Use .agents/scripts/push_branch.sh instead of raw `git push` so transient GitHub failures are retried and the remote SHA is verified.",
+        "Use .agents/scripts/push-branch.sh instead of raw `git push` so transient GitHub failures are retried and the remote SHA is verified.",
     ),
 ]
 
@@ -389,7 +389,7 @@ _HEREDOC_RE = re.compile(
 # An option value is one shell word INCLUDING quoted runs — `-c foo='a b'`
 # must normalize away too: a bare \S+ stops at the space inside the quotes
 # and the mangled residue defeats every git rule (mirrors the quoted-value
-# matcher in pre_commit_gate.sh).
+# matcher in pre-commit-gate.sh).
 _GIT_OPT_VAL = r"(?:[^\s'\"]|'[^']*'|\"[^\"]*\")+"
 _GIT_GLOBAL_OPT = (
     r"(?:"
@@ -641,7 +641,7 @@ def cmd_push(branch: str | None, max_retries: int, *, force: bool = False) -> in
         return 1
     if branch in ("main", "master"):
         # Refuse main/master for ANY push, not only force-pushes — otherwise
-        # running push_branch.sh while on main bypasses the direct-push guard,
+        # running push-branch.sh while on main bypasses the direct-push guard,
         # since the internal `git push` subprocess is invisible to the
         # PreToolUse hook (PI-202).
         sys.stderr.write(
@@ -711,7 +711,7 @@ def cmd_promote(pr_number: int | None) -> int:
 
 
 def cmd_finish(pr_number: int | None, review_cycle: int | None) -> int:
-    """Push, promote, then hand off to monitor_pr.sh for CI/review/merge."""
+    """Push, promote, then hand off to watch-pr.sh for CI/review/merge."""
     # Resolve the PR BEFORE pushing so we push that PR's head branch, never
     # whatever happens to be checked out. Pushing the current branch first let
     # a concurrent branch switch make `finish` push an unrelated branch (PI-458).
@@ -750,8 +750,8 @@ def cmd_finish(pr_number: int | None, review_cycle: int | None) -> int:
     # .sh directly (PI-361): that avoids depending on the script's executable
     # bit or shebang resolution (fragile on native Windows / Git Bash) and on
     # the current working directory. cmd_finish always runs from the scaffolded
-    # .agents/hooks/ copy, so ../scripts/monitor_pr.sh resolves in every mode.
-    script = Path(__file__).resolve().parent.parent / "scripts" / "monitor_pr.sh"
+    # .agents/hooks/ copy, so ../scripts/watch-pr.sh resolves in every mode.
+    script = Path(__file__).resolve().parent.parent / "scripts" / "watch-pr.sh"
     monitor_args = ["bash", str(script), str(pr_number), "--merge"]
     if review_cycle is not None:
         monitor_args += ["--review-cycle", str(review_cycle)]
@@ -816,7 +816,7 @@ def cmd_create_pr_nojira(type_: str, title: str, branch: str | None, base: str |
     # Selector passed explicitly: with none, gh resolves the branch through its
     # local remote-tracking ref, which a --single-branch/--depth clone never
     # creates for anything but the default branch (see _create_pr in
-    # start_issue.sh). Naming the branch keeps the CLOSED/MERGED semantics above.
+    # start-issue.sh). Naming the branch keeps the CLOSED/MERGED semantics above.
     code, out = _gh(["pr", "view", branch, "--json", "url,state"])
     if code == 0:
         try:

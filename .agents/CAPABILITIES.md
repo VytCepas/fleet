@@ -41,39 +41,39 @@ by the declared plugin, identical in every project on that version (ADR-010).
 
 | Skill | Source | Description |
 |---|---|---|
-| add_adr | plugin | Records an architectural decision as a new ADR in .agents/docs/adr/ using the MADR template. Use when a non-obvious design choice is made so future agents understand why. |
-| add_command | plugin | Creates a new slash command (skill) that users can invoke with /name. Use when asked to add a command, automate a repeatable workflow step, or expose a task as a /name shortcut. |
-| add_hook | plugin | Adds a deterministic hook that fires automatically on tool events. Use when asked to enforce a rule on every commit, block a dangerous pattern, validate output, or gate any tool call. |
+| add-command | plugin | Creates a new slash command (skill) that users can invoke with /name. Use when asked to add a command, automate a repeatable workflow step, or expose a task as a /name shortcut. |
+| add-decision-record | plugin | Records an architectural decision as a new ADR in .agents/docs/decisions/ using the MADR template. Use when a non-obvious design choice is made so future agents understand why. |
+| add-hook | plugin | Adds a deterministic hook that fires automatically on tool events. Use when asked to enforce a rule on every commit, block a dangerous pattern, validate output, or gate any tool call. |
 | audit | plugin | Full project health audit — scans hooks, skills, scripts, rules, CI config, docs, and GitHub workflow for inconsistencies, broken references, and common mistakes. Creates a GitHub issue with findings and optionally starts fixing them. |
 | checkpoint | plugin | Checkpoint-and-clear — write a structured session handoff to a gitignored file so the user can /clear and resume from ~500 tokens instead of a re-sent long context |
-| create_issue | plugin | Creates a GitHub Issue with typed labels and structured planning metadata via create_issue.sh. Sub-skill invoked by start_task — do not call directly; use /start_task instead. |
+| create-issue | plugin | Creates a GitHub Issue with typed labels and structured planning metadata via create-issue.sh. Sub-skill invoked by start-task — do not call directly; use /start-task instead. |
 | diagram | plugin | Draw and iterate on diagrams with the user — system architecture, code structure, data models, flows, or idea sketches — as version-controlled Mermaid/DOT/Excalidraw source with live previews |
-| github_workflow | plugin | Guides the agent through the full GitHub PR lifecycle — branch naming, push, review responses, and merge. Loaded automatically before any push, PR creation, review response, or merge action. |
-| local_ci | plugin | Diagnose a GitHub Actions billing/minutes lockout and move CI to a self-hosted runner — the escape hatch when a private repo runs out of free minutes |
+| github-workflow | plugin | Guides the agent through the full GitHub PR lifecycle — branch naming, push, review responses, and merge. Loaded automatically before any push, PR creation, review response, or merge action. |
+| local-ci | plugin | Diagnose a GitHub Actions billing/minutes lockout and move CI to a self-hosted runner — the escape hatch when a private repo runs out of free minutes |
 | plan | in-tree | TDD-style planning — understand requirements, write tests first, then implement with numbered steps |
-| report_upstream_issue | plugin | Files a bug/issue in the right place — routes bugs in shared project-init machinery (hooks, CI templates, lifecycle scripts, board automation, rules, skills) upstream to the project-init repo so they are fixed once for every project, and keeps project-specific bugs local. Use whenever the user asks to report, register, or file a bug or issue. |
-| request_review | plugin | Marks a draft PR ready for review, moving it Draft → In Review and triggering board automation. Use when a draft PR is finished and ready for reviewers. |
+| report-upstream-issue | plugin | Files a bug/issue in the right place — routes bugs in shared project-init machinery (hooks, CI templates, lifecycle scripts, board automation, rules, skills) upstream to the project-init repo so they are fixed once for every project, and keeps project-specific bugs local. Use whenever the user asks to report, register, or file a bug or issue. |
+| request-review | plugin | Marks a draft PR ready for review, moving it Draft → In Review and triggering board automation. Use when a draft PR is finished and ready for reviewers. |
 | review | plugin | Review staged or recent changes for bugs, style issues, and missed edge cases |
-| save_memory | plugin | Save a fact to project memory for future sessions |
-| session_summary | plugin | Summarizes the current session and saves it to the vault. Use at the end of a work session to record completed work, decisions made, and open items for the next session. |
-| start_task | plugin | Creates a GitHub Issue, branch, and draft PR before implementation begins. Use before any non-trivial task to keep work traceable — one issue, one branch, one PR. |
+| save-memory | plugin | Save a fact to project memory for future sessions |
+| session-summary | plugin | Summarizes the current session and saves it to the vault. Use at the end of a work session to record completed work, decisions made, and open items for the next session. |
+| start-task | plugin | Creates a GitHub Issue, branch, and draft PR before implementation begins. Use before any non-trivial task to keep work traceable — one issue, one branch, one PR. |
 | status | plugin | Show project status — git state, recent commits, open tasks, and memory summary |
-| token_efficiency | plugin | Work token-frugally during coding and debugging sessions — keep tool output, file reads, and your own responses from bloating the context window |
+| token-efficiency | plugin | Work token-frugally during coding and debugging sessions — keep tool output, file reads, and your own responses from bloating the context window |
 | verify-test-strength | plugin | Prove a load-bearing test can actually fail — run mutation testing on a target module, then iteratively strengthen its tests until surviving mutants are killed. The automated form of the break-it discipline, for guards that must not silently pass. |
 
 ## Hooks
 
 | Event | Script |
 |---|---|
-| SessionStart | session_setup.sh |
-| PreToolUse | pre_commit_gate.sh |
+| SessionStart | session-setup.sh |
+| PreToolUse | pre-commit-gate.sh |
 | PreToolUse | github_command_guard.sh |
 | PreToolUse | prod_guard.py |
-| PreToolUse | package_guard.py |
-| PreToolUse | pre_edit_issue_guard.py |
-| PostToolUse | post_edit_lint.sh |
+| PreToolUse | admission_package.py |
+| PreToolUse | admission_issue_edit.py |
+| PostToolUse | post-edit-lint.sh |
 | PostToolUse | tool_output_compressor.py |
-| UserPromptSubmit | workflow_state_reminder.sh |
+| UserPromptSubmit | workflow-state-reminder.sh |
 
 ## MCP servers (0)
 

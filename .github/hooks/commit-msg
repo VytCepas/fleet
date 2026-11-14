@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # commit-msg hook: validate commit message format before push.
-# Install: run .agents/scripts/install_hooks.sh once after cloning (manual step).
+# Install: run .agents/scripts/install-hooks.sh once after cloning (manual step).
 #
 # Canonical format (Conventional Commits, ADR-006):
 #   feat(PI-42): Add OAuth login        (issue-linked — key as scope)

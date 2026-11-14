@@ -65,6 +65,6 @@ summarized away.
 
 - `/compact` — lossy automatic summary; fine mid-task, but you don't control
   what survives.
-- `session_summary` skill — archival record for the vault; not optimized for
+- `session-summary` skill — archival record for the vault; not optimized for
   continuation.
 - `checkpoint` — continuation-optimized, human-auditable, cheapest resume.

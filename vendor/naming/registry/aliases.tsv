@@ -30,9 +30,6 @@ id	term	kind	surfaces	remove_by	note
 harbor	platform	codename	repo,brand,cli,launchd,systemd,env-prefix,glossary,readme-heading	never	the brand and the control plane's repo name
 yard	scaffolder	codename	repo,brand,cli,env-prefix,glossary,readme-heading	never	repo renamed from project-init (§11 step 7)
 ship	deploy	codename	path,env,check-id,command,glossary,registry,record,memory-prose	never	the ship contract's unattended merge and deploy (v1.1 §5a.8): .agents/ship.config, SHIP_*, check id ship, harbor ship. Was a legacy alias of workload (D-6), and is still never a repo's name
-orchestrator	fleet-controller	legacy	glossary,registry,record,memory-prose	2026-11-15	§1.2
-projects-orchestrator	fleet-controller	legacy	glossary,registry,record,memory-prose	2026-11-15	repo renamed fleet (§11 step 7)
-project-init	scaffolder	legacy	glossary,registry,record,memory-prose	2026-11-15	repo renamed yard (§11 step 7)
 golden	-	banned	glossary	-	say golden fixture, source of truth, or pin (§5)
 self-healing	auto-remediation	banned	glossary	-	§1.3
 signed	-	banned	glossary	-	nothing is signed; say provenance stamp (§1.3)

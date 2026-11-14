@@ -11,7 +11,7 @@ interactively** in normal sessions and **hard-blocks in fully autonomous
 mode**. Escape hatch: `safety.allow` in `.agents/config.yaml`.
 
 On the non-Claude surfaces (Codex/Cursor/Antigravity) the same guard fires via
-the shared adapter (`.agents/hooks/agent_guard_adapter.py`) and hard-blocks
+the shared adapter (`.agents/hooks/admission_agent_adapter.py`) and hard-blocks
 wherever the surface actually enforces the hook (those surfaces are
 non-interactive, so "ask" isn't possible). Hook enforcement is best-effort and
 surface-dependent — e.g. some Codex versions gate project-scoped hooks behind
@@ -40,6 +40,6 @@ described in AGENTS.md.
 - **Codex** — skills are discoverable under `.agents/skills/`; the command +
   destructive-command (`prod_guard`) + package-guard (`package_guard`) guards
   are wired via `.codex/hooks.json` (adapter:
-  `.agents/hooks/agent_guard_adapter.py`). **Advisory**: some Codex versions
+  `.agents/hooks/admission_agent_adapter.py`). **Advisory**: some Codex versions
   gate project-scoped hooks behind a one-time trust/enable step before they
   fire, so git + CI remain the real boundary.

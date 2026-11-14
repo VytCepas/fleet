@@ -93,7 +93,7 @@ error.
 (~15–20 min for a full pipeline). Register a second runner to restore
 parallelism.
 The lifecycle scripts' CI wait defaults to 900s — set `PI_CI_TIMEOUT`
-(seconds) in the environment where you run `finish_pr.sh` / `monitor_pr.sh`
+(seconds) in the environment where you run `finish-pr.sh` / `watch-pr.sh`
 (e.g. `PI_CI_TIMEOUT=1800`) so the merge flow survives sequential runs.
 
 
@@ -129,7 +129,7 @@ sets `PYTEST_XDIST_AUTO_NUM_WORKERS` or passes `-n N`.
 
 The GitHub-hosted workflows above keep **failing permanently** while the
 billing lockout lasts — each run dies as a zero-step `startup_failure`.
-Those failures register as checks on your PRs, and `monitor_pr.sh --merge`
+Those failures register as checks on your PRs, and `watch-pr.sh --merge`
 blocks on any failing check, so one dead check would deadlock every PR even
 though real CI is green on your runner. Name such checks in
 `.agents/config.yaml`:
@@ -138,7 +138,7 @@ though real CI is green on your runner. Name such checks in
   monitor_ignore_checks: ["board-sync"]   # reported, never blocking
 ```
 
-(or per-run: `PI_MONITOR_IGNORE_CHECKS=board-sync monitor_pr.sh …`). The
+(or per-run: `PI_MONITOR_IGNORE_CHECKS=board-sync watch-pr.sh …`). The
 check is still printed — marked informational — and the merge proceeds.
 Remove the entry once billing recovers; the gate reverts to blocking.
 
@@ -149,7 +149,7 @@ too, and can re-block it after you already worked around the failure. Remedy:
 give the PR a unique head commit —
 
 ```bash
-git commit --allow-empty -m "chore: refresh PR head" && .agents/scripts/push_branch.sh
+git commit --allow-empty -m "chore: refresh PR head" && .agents/scripts/push-branch.sh
 ```
 
 which clears the stale failure from this PR's rollup.

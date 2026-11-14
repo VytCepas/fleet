@@ -2,15 +2,15 @@
 
 Four numbers — ADR-012, ADR-017, ADR-024, ADR-025 — were cited across ``src/``
 and ``docs/`` as if they were this repo's decisions, and no file for them exists
-in ``.agents/docs/adr/``. They are project-init's ADRs: the descriptor contract,
+in ``.agents/docs/decisions/``. They are project-init's ADRs: the descriptor contract,
 the tier model and the credential boundary are decided upstream, and this repo
 consumes them. A bare ``ADR-025 §4`` read as a local section of a local document
 that had no first section, and an audit spent effort looking for it.
 
 So a citation takes one of two forms, and this test enforces it:
 
-- ``ADR-NNN`` — resolves to ``.agents/docs/adr/adr-NNN-*.md`` in this repo;
-- ``project-init ADR-NNN`` — resolves to a row of ``.agents/docs/adr/UPSTREAM.md``,
+- ``ADR-NNN`` — resolves to ``.agents/docs/decisions/adr-NNN-*.md`` in this repo;
+- ``project-init ADR-NNN`` — resolves to a row of ``.agents/docs/decisions/UPSTREAM.md``,
   which names the upstream file. Accepting any qualified number would let a typo
   point at nothing, so the qualifier alone is not enough.
 
@@ -37,8 +37,8 @@ from pathlib import Path
 import pytest
 
 _ROOT = Path(__file__).resolve().parents[3]
-_ADR_DIR = _ROOT / ".agents" / "docs" / "adr"
-_INDEX = ".agents/docs/adr/UPSTREAM.md"
+_ADR_DIR = _ROOT / ".agents" / "docs" / "decisions"
+_INDEX = ".agents/docs/decisions/UPSTREAM.md"
 
 #: The whole token that starts with a digit, not exactly three digits: a dropped
 #: or doubled digit (``ADR-03``, ``ADR-0250``) or a trailing character
@@ -194,7 +194,7 @@ def test_every_cited_adr_resolves_here_or_upstream(scanned: dict[str, str]) -> N
         for line, citation in phantoms(text, local, upstream)
     ]
     assert not bad, (
-        "ADR cited that resolves to nothing. Write the ADR in .agents/docs/adr/, or, if "
+        "ADR cited that resolves to nothing. Write the ADR in .agents/docs/decisions/, or, if "
         f"the decision is project-init's, cite it as 'project-init ADR-NNN' with a row in "
         f"{_INDEX}:\n  " + "\n  ".join(bad)
     )

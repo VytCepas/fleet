@@ -44,16 +44,16 @@ The unifier is the **container image + the `justfile`**, not Terraform:
 - Rollback = redeploy the previous digest. No git surgery.
 - If a managed platform (Vercel/Netlify/Render/…) owns your deploy, let it — this
   project points at its native flow rather than fighting it.
-- Arm the server-side gate with `.agents/scripts/setup_env_protection.sh`
+- Arm the server-side gate with `.agents/scripts/setup-environment-protection.sh`
   (`--reviewer @org/team` for a true human gate on `org`); see what's live with
-  `.agents/scripts/whats_deployed.sh`.
+  `.agents/scripts/what-is-deployed.sh`.
 
 ### Platform owns deploy (no GitHub Actions deploy)
 
 When the deploy target is `none`, your PaaS (Vercel/Render/Fly/…) deploys on push
 and **project-init scaffolds no deploy workflow** — wire your platform's native
 git integration and read deploy state from its dashboard/CLI (GitHub won't have
-Deployment records, so `whats_deployed.sh` will report none). Keep the prod gate
+Deployment records, so `what-is-deployed.sh` will report none). Keep the prod gate
 in the platform (require a deploy approval / protect the production branch there).
 
 For the full rationale, see ADR-015 (env & deploy model) in the project-init

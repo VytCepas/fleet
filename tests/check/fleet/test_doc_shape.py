@@ -89,7 +89,10 @@ def test_a_doc_with_no_owner_is_red(repo: Path) -> None:
 @pytest.mark.parametrize(
     ("generated", "fix"),
     [
-        (".agents/docs/CODE_MAP.md", ["uv", "run", "python", ".agents/scripts/gen_code_map.py"]),
+        (
+            ".agents/docs/code-map.md",
+            ["uv", "run", "python", ".agents/scripts/generate-code-map.py"],
+        ),
         (
             ".github/CODEOWNERS",
             ["uv", "run", "python", ".agents/scripts/gen_codeowners.py", "--write"],

@@ -14,7 +14,7 @@ esac
 set -u
 
 # Resolve the Python interpreter through the canonical helper (PI-361).
-PY="$(dirname "$0")/_py.sh"
+PY="$(dirname "$0")/python-resolve.sh"
 
 "$PY" -c '
 import json

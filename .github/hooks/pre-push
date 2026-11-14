@@ -5,11 +5,17 @@
 #      the same rule as dag_workflow.py's _BRANCH_RE. Full issue-key
 #      validation (<type>/<KEY>-<n>-<slug>) runs in CI via validate-pr.yml,
 #      where the linked issue can actually be checked.
-# Install: .agents/scripts/install_hooks.sh
+# Install: .agents/scripts/install-hooks.sh
 
 set -e
 
 ZERO_SHA="0000000000000000000000000000000000000000"
+
+# The push's ref lines, kept in a file: the branch rules below read them, and so
+# does `gate-push check` before the fast-ci gate.
+PUSH_IN="$(mktemp "${TMPDIR:-/tmp}/pre-push.XXXXXX")"
+trap 'rm -f "$PUSH_IN"' EXIT
+cat > "$PUSH_IN"
 
 # git feeds "<local_ref> <local_sha> <remote_ref> <remote_sha>" per ref; we only
 # use local_sha + remote_ref, so the other two fields go to `_`. -r per SC2162.
@@ -32,7 +38,7 @@ while read -r _ local_sha remote_ref _; do
     echo ""
     echo "To contribute:"
     echo "  1. Create a new branch with the project key: git checkout -b <issue_type>/<project_abbr>-<issue_number>-<slug>"
-    echo "  2. Make your changes and push: .agents/scripts/push_branch.sh"
+    echo "  2. Make your changes and push: .agents/scripts/push-branch.sh"
     echo "  3. Open a PR on GitHub"
     echo ""
     echo "For more details, see .agents/project-init.md"
@@ -47,10 +53,10 @@ while read -r _ local_sha remote_ref _; do
     echo "  Issue-linked:  feat/PI-42-add-oauth-login"
     echo "  No issue:      chore/nojira-bump-dev-dependency"
     echo ""
-    echo "Use .agents/scripts/start_issue.sh or create_nojira_pr.sh to create branches."
+    echo "Use .agents/scripts/start-issue.sh or create-pr-without-issue.sh to create branches."
     exit 1
   fi
-done
+done < "$PUSH_IN"
 
 # GIT EXPORTS ITS REPO POINTERS INTO EVERY HOOK, AND A TEST SUITE INHERITS THEM.
 # `GIT_DIR` (plus `GIT_WORK_TREE`/`GIT_INDEX_FILE` in a worktree) is set by git
@@ -86,7 +92,17 @@ if [[ "$PUSHING_BRANCH" == "1" ]]; then
     # hide a failure in the pushed commit, or unrelated WIP could fail a clean
     # push. So skip the gate (fail-open) with a clear nudge instead of testing a
     # tree that isn't what's being pushed; CI stays the backstop.
-    if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+    # A PASS ALREADY PAID FOR. git holds its push token from connect to pack
+    # send, so a long fast-ci ends in HTTP 401. `gate-push` (on PATH where the
+    # box provides it) runs this hook under a dry-run push, records
+    # the pass, then pushes; `gate-push check` exits 0 only for that exact sha,
+    # push and check set, which includes this file and the recipe declared next.
+    # The branch rules above always run; only fast-ci is skipped. No gate-push on
+    # PATH, or any mismatch: fast-ci runs exactly as before.
+    # gate-push: cmd just --show fast-ci
+    if command -v gate-push >/dev/null 2>&1 && gate-push check "$@" < "$PUSH_IN"; then
+      :
+    elif [ -n "$(git status --porcelain 2>/dev/null)" ]; then
       echo "pre-push: working tree is dirty — skipping the 'just fast-ci' gate" >&2
       echo "  (it would test the worktree, not the commit being pushed)." >&2
       echo "  Commit or stash your changes to run the gate before pushing." >&2

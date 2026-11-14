@@ -219,7 +219,7 @@ without a row here fails CI.
 
 ### Design
 
-See [`.agents/docs/adr/`](.agents/docs/adr/) — ADR-003 (fleet engine), ADR-005
+See [`.agents/docs/decisions/`](.agents/docs/decisions/) — ADR-003 (fleet engine), ADR-005
 (cloud control plane), ADR-006 (autonomous heal), ADR-007 (agent runs). Some
 decisions are cited by number in code and docs but not yet written up; those are
 tracked in #189 and marked where they are cited, so a dead link is never left

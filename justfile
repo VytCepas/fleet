@@ -22,9 +22,9 @@ lint:
     uv run ruff format --check .
     sh -c 'if command -v shellcheck >/dev/null 2>&1; then find .agents -name "*.sh" -exec shellcheck -S error -x {} +; else echo "shellcheck not installed — skipping shell lint (CI still runs it). Install: https://github.com/koalaman/shellcheck#installing or run \`mise install\`."; fi'
     sh -c 'if command -v shfmt >/dev/null 2>&1; then find .agents -name "*.sh" -exec shfmt -d -i 2 {} +; else echo "shfmt not installed — skipping shfmt check (CI still runs it). Install: https://github.com/mvdan/sh#shfmt or run \`mise install\`."; fi'
-    bash .agents/scripts/lint_context_budget.sh
-    uv run python .agents/scripts/check_test_contract.py exit-codes
-    PYTEST_ADDOPTS="-o addopts=" uv run --with pytest --with hypothesis python .agents/scripts/check_test_contract.py discovery
+    bash .agents/scripts/lint-context-budget.sh
+    uv run python .agents/scripts/check-test-contract.py exit-codes
+    PYTEST_ADDOPTS="-o addopts=" uv run --with pytest --with hypothesis python .agents/scripts/check-test-contract.py discovery
     just docs-check
 
 # docs front matter and generated-file headers, strict: every docs/**/*.md carries kind, owner and status; a
@@ -88,7 +88,7 @@ test-mutation:
     uv run --with mutmut mutmut export-cicd-stats
 
 # dependency vulnerability scan against known CVEs/advisories (PI-568).
-# complements package_guard.py, which only blocks installing a package that
+# complements admission_package.py, which only blocks installing a package that
 # doesn't exist or looks typosquatted — this catches a real, correctly-
 # spelled dependency with a known vulnerability already in the lockfile.
 [doc("dependency vulnerability scan against known CVEs/advisories (PI-568).")]
@@ -161,9 +161,9 @@ docs:
 scan:
     gitleaks git --pre-commit --staged --redact --no-banner --verbose
 
-# regenerate .agents/docs/CODE_MAP.md (low-token "what does what" map; read before grepping)
+# regenerate .agents/docs/code-map.md (low-token "what does what" map; read before grepping)
 code-map:
-    uv run python .agents/scripts/gen_code_map.py
+    uv run python .agents/scripts/generate-code-map.py
 
 # is the vendored project-init contract still what upstream ships? (#106)
 # The contract tests guard the copy vendored HERE; this guards that copy against
