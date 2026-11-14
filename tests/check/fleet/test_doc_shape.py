@@ -24,6 +24,10 @@ _SKIP = shutil.ignore_patterns(
 )
 _OWNER = "owner: @fixture-owner"
 
+# Every test here runs the gate on a copy of the checkout, so each is judged against the checkout's
+# generated files. mutmut's copy (mutants/) carries mutated code that changes those files: deselect.
+pytestmark = pytest.mark.repo_tree
+
 
 def _run(repo: Path, *argv: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(

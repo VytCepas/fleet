@@ -64,6 +64,7 @@ addopts = "--ignore=tests/check/integration --ignore=mutants"
 markers = [
     "inspects_agent_launch: exercises _default_agent_run itself (must stub subprocess.run); exempt from the no-live-agent fixture",
     "reads_the_checkout: reads files through git's top level, which under mutmut is the original checkout, not mutants/; exempt from the mutmut copy check",
+    "repo_tree: judges the real checkout's generated files and docs; mutmut deselects it (its copy is mutants/, where generated maps differ)",
 ]
 
 # The version lives in ONE place, __init__.py, and hatch reads it at build time
@@ -92,6 +93,9 @@ packages = ["src/projects_orchestrator"]
 # never-lie run invariant, the pid-reuse guard, and the status/contract parsers.
 [tool.mutmut]
 source_paths = ["src/projects_orchestrator"]
+# Installed mutmut (3.8.1) passes this to every test-selecting pytest run; `repo_tree` tests judge the
+# checkout, not the mutated copy, and still run in the normal `ci` job.
+pytest_add_cli_args_test_selection = ["-m", "not repo_tree"]
 # mutmut copies the tree into `mutants/` and runs pytest FROM THERE, so anything
 # the tests open by path must be copied too, or the clean run dies with
 # FileNotFoundError and the nightly never mutates anything (#253: README.md,
