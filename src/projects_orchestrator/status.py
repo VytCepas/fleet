@@ -59,8 +59,13 @@ class ProjectStatus:
 
 
 def _git(path: Path, *args: str) -> str | None:
-    """Run one git subcommand in ``path``; ``None`` on any failure."""
-    result = run_command("git " + " ".join(args), cwd=path, timeout=GIT_TIMEOUT)
+    """Run one git subcommand in ``path``; ``None`` on any failure.
+
+    Every probe here only reads, so ``--no-optional-locks``: a plain ``git status``
+    takes ``.git/index.lock`` to refresh the index, and the SIGKILL at the timeout
+    (a loaded box, a big tree) strands it, blocking every git write in that repo.
+    """
+    result = run_command("git --no-optional-locks " + " ".join(args), cwd=path, timeout=GIT_TIMEOUT)
     return result.stdout.strip() if result.ok else None
 
 
