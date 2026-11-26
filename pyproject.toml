@@ -28,6 +28,11 @@ dependencies = ["pyyaml>=6.0"]
 [project.optional-dependencies]
 tui = ["textual>=0.86"]
 
+[tool.uv]
+# Hold new releases for 7 days so a poisoned or yanked build is pulled before
+# the lock can resolve it. Exempt one package with `exclude-newer-package`.
+exclude-newer = "7 days"
+
 [project.scripts]
 projects-orchestrator = "projects_orchestrator.__main__:main"
 
